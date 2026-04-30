@@ -16,9 +16,12 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
   const [anchor, setAnchor] = useState(null);
   const [positions, setPositions] = useState({});
   const [layoutLoaded, setLayoutLoaded] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [availableWidth, setAvailableWidth] = useState(CANVAS_W);
+  const toolbarRef = useRef(null);
+  const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
   const dragRef = useRef(null);
-  const [containerWidth, setContainerWidth] = useState(CANVAS_W);
 
   const items = useMemo(() => flattenForRender(tree), [tree]);
   const layoutStorageKey = useMemo(
@@ -31,13 +34,17 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
     return computeStats(all);
   }, [items]);
 
-  const scale = containerWidth / CANVAS_W;
+  const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 0;
+  const availableHeight = Math.max(360, viewportHeight - toolbarHeight - 64);
+  const scale = Math.min(availableWidth / CANVAS_W, availableHeight / CANVAS_H, 1);
+  const scaledWidth = CANVAS_W * scale;
   const scaledHeight = CANVAS_H * scale;
   const hasCustomLayout = Object.keys(positions).length > 0;
 
   const updateRect = useCallback(() => {
-    if (containerRef.current) {
-      setContainerWidth(containerRef.current.getBoundingClientRect().width);
+    setViewportHeight(window.innerHeight);
+    if (canvasAreaRef.current) {
+      setAvailableWidth(canvasAreaRef.current.getBoundingClientRect().width);
     }
   }, []);
 
@@ -147,7 +154,10 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
       style={{ background: "linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)" }}
     >
       {/* Top toolbar */}
-      <div className="px-6 py-3 flex items-center justify-between border-b border-slate-200/80 bg-white/70 backdrop-blur sticky top-0 z-40">
+      <div
+        ref={toolbarRef}
+        className="px-6 py-3 flex items-center justify-between border-b border-slate-200/80 bg-white/70 backdrop-blur sticky top-0 z-40"
+      >
         <div className="flex items-center gap-3">
           {/* <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -159,8 +169,13 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
             <span className="text-white font-bold text-[12px]"></span>
           </div> */}
           <div>
-            <div className="text-[20px] font-bold text-slate-900">
-              <img src="public\harts-logo.png" alt="llknlk" height= "40px" width="40px"/>HARTS Transformation Maturity Dashboard
+            <div className="flex items-center gap-3 text-[20px] font-bold text-slate-900">
+              <img
+                src="/harts-logo.png"
+                alt="HARTS"
+                className="h-10 w-auto object-contain"
+              />
+              <span>HARTS Transformation Maturity Dashboard</span>
             </div>
             <div className="text-[13px] text-slate-500">{fileName}</div>
           </div>
@@ -205,13 +220,13 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
       </div>
 
       {/* Canvas */}
-      <div className="px-6 py-6">
+      <div ref={canvasAreaRef} className="px-6 py-4">
         <div
           ref={containerRef}
           className="relative mx-auto rounded-xl overflow-hidden bg-white"
           style={{
-            width: "100%",
-            maxWidth: CANVAS_W,
+            width: scaledWidth,
+            maxWidth: "100%",
             height: scaledHeight,
             boxShadow:
               "0 18px 48px rgba(15,35,72,0.14), 0 4px 12px rgba(15,35,72,0.06)",
@@ -284,7 +299,7 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
         </div> */}
 
         {/* Phase summary cards */}
-        <div className="max-w-[1480px] mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="max-w-[1480px] mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           {["Establish", "Enhance", "Optimize"].map((phase) => {
             const phaseItems = items.filter((i) => i.phase === phase);
             const allTasks = phaseItems.flatMap((i) => i.tasks);
@@ -324,7 +339,7 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
               </div>
             );
           })}
-        </div>
+        </div> */}
       </div>
     </div>
   );
