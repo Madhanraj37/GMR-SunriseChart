@@ -160,7 +160,7 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
           </div> */}
           <div>
             <div className="text-[20px] font-bold text-slate-900">
-              <img src="public\harts-logo.png" alt="" height= "40px" width="40px"/>HARTS Transformation Maturity Dashboard
+              <img src="public\harts-logo.png" alt="llknlk" height= "40px" width="40px"/>HARTS Transformation Maturity Dashboard
             </div>
             <div className="text-[13px] text-slate-500">{fileName}</div>
           </div>
