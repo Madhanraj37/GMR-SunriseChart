@@ -52,6 +52,8 @@ const findKnownValue = (cells, known) => {
 };
 
 const getFirstText = (cells) => cells.map(clean).find(Boolean) || "";
+const MAX_SCAN_ROWS = 600;
+const MAX_SCAN_COLS = 40;
 
 const findHeaderRow = (rows) => {
   const searchLimit = Math.min(rows.length, 25);
@@ -74,11 +76,24 @@ const findHeaderRow = (rows) => {
 };
 
 const rowsFromSheet = (sheet, sheetName) => {
-  const rawRows = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: "",
-    blankrows: false,
-  });
+  if (!sheet?.["!ref"]) return [];
+
+  const range = XLSX.utils.decode_range(sheet["!ref"]);
+  const endRow = Math.min(range.e.r, range.s.r + MAX_SCAN_ROWS - 1);
+  const endCol = Math.min(range.e.c, range.s.c + MAX_SCAN_COLS - 1);
+  const rawRows = [];
+
+  for (let rowIndex = range.s.r; rowIndex <= endRow; rowIndex += 1) {
+    const row = [];
+    let hasValue = false;
+    for (let colIndex = range.s.c; colIndex <= endCol; colIndex += 1) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+      const value = clean(sheet[cellAddress]?.w ?? sheet[cellAddress]?.v);
+      row.push(value);
+      if (value) hasValue = true;
+    }
+    if (hasValue) rawRows.push(row);
+  }
 
   const rows = rawRows
     .map((row) => row.map(clean))
@@ -155,10 +170,17 @@ const rowsFromSheet = (sheet, sheetName) => {
   return parsed;
 };
 
-const rowsFromWorkbook = (workbook) =>
-  workbook.SheetNames.flatMap((sheetName) =>
-    rowsFromSheet(workbook.Sheets[sheetName], sheetName)
-  );
+const rowsFromWorkbook = (workbook) => {
+  const allRows = [];
+
+  for (const sheetName of workbook.SheetNames) {
+    const rows = rowsFromSheet(workbook.Sheets[sheetName], sheetName);
+    if (rows.length) allRows.push(...rows);
+    if (allRows.length >= 120) break;
+  }
+
+  return allRows;
+};
 
 export default function App() {
   const [data, setData] = useState(null);

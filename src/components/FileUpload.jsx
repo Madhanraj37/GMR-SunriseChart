@@ -14,6 +14,7 @@ export default function FileUpload({ onFile, error, isLoading }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDrag(false);
+    if (isLoading) return;
     const f = e.dataTransfer.files?.[0];
     if (f) onFile(f);
   };
@@ -54,7 +55,9 @@ export default function FileUpload({ onFile, error, isLoading }) {
           }}
           onDragLeave={() => setDrag(false)}
           onDrop={handleDrop}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            if (!isLoading) inputRef.current?.click();
+          }}
           className="relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden"
           style={{
             borderColor: drag ? "#EE8A1A" : "#cbd5e1",
@@ -98,16 +101,19 @@ export default function FileUpload({ onFile, error, isLoading }) {
               type="file"
               accept=".xlsx,.xls"
               className="hidden"
-              onChange={(e) =>
-                e.target.files?.[0] && onFile(e.target.files[0])
-              }
+              disabled={isLoading}
+              onChange={(e) => {
+                if (e.target.files?.[0]) onFile(e.target.files[0]);
+                e.target.value = "";
+              }}
             />
             <button
               type="button"
+              disabled={isLoading}
               className="px-5 py-2 rounded-lg bg-slate-900 text-white text-[13px] font-semibold hover:bg-slate-800 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                inputRef.current?.click();
+                if (!isLoading) inputRef.current?.click();
               }}
             >
               <FileSpreadsheet className="w-4 h-4 inline mr-1.5 -mt-0.5" />

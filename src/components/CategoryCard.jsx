@@ -11,7 +11,6 @@ import { HEADER_H } from "../constants.js";
 export default function CategoryCard({
   item,
   position,
-  onDragStart,
   onHover,
   onLeave,
   isActive,
@@ -21,7 +20,7 @@ export default function CategoryCard({
 
   // Width caps prevent overlap with curves
   const maxWidth =
-    item.phase === "Optimize" ? 150 : item.phase === "Enhance" ? 145 : 145;
+    item.phase === "Optimize" ? 130 : item.phase === "Enhance" ? 140 : 142;
 
   return (
     <motion.div
@@ -31,7 +30,6 @@ export default function CategoryCard({
         top: position.y + HEADER_H,
         width: maxWidth,
         zIndex: isActive ? 30 : 5,
-        touchAction: "none",
       }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -40,67 +38,25 @@ export default function CategoryCard({
         delay: 0.05 * index,
         ease: [0.16, 1, 0.3, 1],
       }}
-      data-drag-x={position.x}
-      data-drag-y={position.y}
-      onPointerDown={(e) => onDragStart(item.key, e)}
       onMouseEnter={(e) => onHover(item, e)}
       onMouseLeave={onLeave}
       whileHover={{ scale: 1.06 }}
     >
       {/* Title */}
       <div
-        className="text-white font-semibold decoration-white/70 underline-offset-0 leading-tight italic mx-10 -mt-2"
+        className="text-white font-semibold decoration-white/70 underline-offset-0 leading-tight italic"
         style={{
           fontSize: 13,
           textShadow: "0 1px 2px rgba(0,0,0,0.35)",
+          textDecorationLine: "underline",
         }}
       >
         {category}
       </div>
 
-      {/* Progress + condensed counts */}
-      <div className="mt-2 flex items-center gap-2">
+      {/* Percentage only */}
+      <div className="mt-2 flex items-center">
         <ProgressCircle pct={stats.pct} size={42} />
-        <div className="flex flex-col" style={{ fontSize: 9.5 }}>
-          <span className="text-white/90 font-semibold">
-            {stats.total} task{stats.total === 1 ? "" : "s"}
-          </span>
-          <div className="flex gap-1 mt-0.5">
-            <span
-              className="px-1.5 rounded font-bold"
-              title="Done"
-              style={{
-                background: "rgba(34,197,94,0.9)",
-                color: "#fff",
-                fontSize: 9,
-              }}
-            >
-              {stats.done}
-            </span>
-            <span
-              className="px-1.5 rounded font-bold"
-              title="In Progress"
-              style={{
-                background: "rgba(245,158,11,0.9)",
-                color: "#fff",
-                fontSize: 9,
-              }}
-            >
-              {stats.inprog}
-            </span>
-            <span
-              className="px-1.5 rounded font-bold"
-              title="To Do"
-              style={{
-                background: "rgba(239,68,68,0.9)",
-                color: "#fff",
-                fontSize: 9,
-              }}
-            >
-              {stats.todo}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Hover glow */}

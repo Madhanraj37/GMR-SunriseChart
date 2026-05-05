@@ -9,26 +9,26 @@ import {
 } from "../constants.js";
 
 export default function PhaseBackground() {
-  const top = HEADER_H + 48;
+  const top = HEADER_H + 22;
   const bottom = CANVAS_H - BOTTOM_LABEL;
   const left = LEFT_GUTTER;
-  const right = CANVAS_W - 58;
+  const right = CANVAS_W - 92;
 
-  const b1Top = 410;
-  const b1Bot = 596;
+  const b1Top = 430;
+  const b1Bot = 620;
 
-  const b2Top = 752;
-  const b2Bot = 990;
+  const b2Top = 775;
+  const b2Bot = 1084;
 
   const boundary1Curve = `
-    C 390 ${top + 150},
-      420 ${bottom - 168},
+    C 398 ${top + 182},
+      438 ${bottom - 132},
       ${b1Bot} ${bottom}
   `;
 
   const boundary2Curve = `
-    C 738 ${top + 154},
-      790 ${bottom - 172},
+    C 760 ${top + 170},
+      812 ${bottom - 156},
       ${b2Bot} ${bottom}
   `;
 
@@ -36,10 +36,10 @@ export default function PhaseBackground() {
   const boundary2 = `M ${b2Top} ${top} ${boundary2Curve}`;
 
   const enhanceInnerCurve = `
-    M 574 ${top}
-    C 562 ${top + 146},
-      604 ${bottom - 176},
-      762 ${bottom}
+    M 600 ${top}
+    C 590 ${top + 146},
+      620 ${bottom - 172},
+      842 ${bottom}
   `;
 
   const pathEstablish = `
@@ -55,8 +55,8 @@ export default function PhaseBackground() {
     L ${b2Top} ${top}
     ${boundary2Curve}
     L ${b1Bot} ${bottom}
-    C 420 ${bottom - 168},
-      390 ${top + 150},
+    C 438 ${bottom - 132},
+      398 ${top + 182},
       ${b1Top} ${top}
     Z
   `;
@@ -66,8 +66,8 @@ export default function PhaseBackground() {
     L ${right} ${top}
     L ${right} ${bottom}
     L ${b2Bot} ${bottom}
-    C 790 ${bottom - 172},
-      738 ${top + 154},
+    C 812 ${bottom - 156},
+      760 ${top + 170},
       ${b2Top} ${top}
     Z
   `;
@@ -117,7 +117,7 @@ export default function PhaseBackground() {
       <g clipPath="url(#clip-content)">
         <line
           x1={left + 10}
-          y1={top + 252}
+          y1={top + 246}
           x2={right - 62}
           y2={top + 52}
           stroke="rgba(255,255,255,0.95)"
@@ -129,7 +129,7 @@ export default function PhaseBackground() {
           x1={left + 10}
           y1={bottom - 4}
           x2={right - 28}
-          y2={top + 122}
+          y2={top + 138}
           stroke="rgba(255,255,255,0.95)"
           strokeWidth="2.4"
           strokeDasharray="1 6"

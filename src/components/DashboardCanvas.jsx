@@ -1,33 +1,24 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Move, RotateCcw, Undo2 } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 import PhaseBackground from "./PhaseBackground.jsx";
 import { PhaseHeaders, AxisLabels, GMRBadge } from "./Overlays.jsx";
 import CategoryCard from "./CategoryCard.jsx";
 import TooltipModal from "./TooltipModal.jsx";
-import ProgressCircle from "./ProgressCircle.jsx";
 
-import { CANVAS_W, CANVAS_H, PHASE_COLORS } from "../constants.js";
+import { CANVAS_W, CANVAS_H } from "../constants.js";
 import { flattenForRender, computeStats, getProgressColor } from "../utils.js";
 
 export default function DashboardCanvas({ tree, onReset, fileName }) {
   const [hover, setHover] = useState(null);
   const [anchor, setAnchor] = useState(null);
-  const [positions, setPositions] = useState({});
-  const [layoutLoaded, setLayoutLoaded] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const [availableWidth, setAvailableWidth] = useState(CANVAS_W);
   const toolbarRef = useRef(null);
   const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
-  const dragRef = useRef(null);
-
   const items = useMemo(() => flattenForRender(tree), [tree]);
-  const layoutStorageKey = useMemo(
-    () => `transformation-dashboard-layout:${fileName || "sample"}`,
-    [fileName]
-  );
 
   const totalStats = useMemo(() => {
     const all = items.flatMap((i) => i.tasks);
@@ -35,11 +26,11 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
   }, [items]);
 
   const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 0;
-  const availableHeight = Math.max(360, viewportHeight - toolbarHeight - 64);
-  const scale = Math.min(availableWidth / CANVAS_W, availableHeight / CANVAS_H, 1);
-  const scaledWidth = CANVAS_W * scale;
-  const scaledHeight = CANVAS_H * scale;
-  const hasCustomLayout = Object.keys(positions).length > 0;
+  const availableHeight = Math.max(360, viewportHeight - toolbarHeight - 24);
+  const scaleX = availableWidth / CANVAS_W;
+  const scaleY = availableHeight / CANVAS_H;
+  const scaledWidth = CANVAS_W * scaleX;
+  const scaledHeight = CANVAS_H * scaleY;
 
   const updateRect = useCallback(() => {
     setViewportHeight(window.innerHeight);
@@ -54,92 +45,17 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
     return () => window.removeEventListener("resize", updateRect);
   }, [updateRect]);
 
-  useEffect(() => {
-    setLayoutLoaded(false);
-    try {
-      const saved = window.localStorage.getItem(layoutStorageKey);
-      setPositions(saved ? JSON.parse(saved) : {});
-    } catch {
-      setPositions({});
-    } finally {
-      setLayoutLoaded(true);
-    }
-  }, [layoutStorageKey]);
-
-  useEffect(() => {
-    if (!layoutLoaded) return;
-    try {
-      window.localStorage.setItem(layoutStorageKey, JSON.stringify(positions));
-    } catch {
-      // The dashboard still works if browser storage is unavailable.
-    }
-  }, [layoutLoaded, layoutStorageKey, positions]);
-
-  const getPosition = useCallback(
-    (key, fallback) => positions[key] || fallback,
-    [positions]
-  );
-
-  const handleDragStart = useCallback(
-    (key, e) => {
-      if (e.button !== undefined && e.button !== 0) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const fallback = {
-        x: Number(e.currentTarget.dataset.dragX || 0),
-        y: Number(e.currentTarget.dataset.dragY || 0),
-      };
-      const current = getPosition(key, fallback);
-      dragRef.current = {
-        key,
-        pointerId: e.pointerId,
-        startClientX: e.clientX,
-        startClientY: e.clientY,
-        startX: current.x,
-        startY: current.y,
-      };
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-      setHover(null);
-      setAnchor(null);
-    },
-    [getPosition, items]
-  );
-
-  const handlePointerMove = useCallback(
-    (e) => {
-      const drag = dragRef.current;
-      if (!drag) return;
-
-      const dx = (e.clientX - drag.startClientX) / scale;
-      const dy = (e.clientY - drag.startClientY) / scale;
-      setPositions((current) => ({
-        ...current,
-        [drag.key]: {
-          x: Math.round(drag.startX + dx),
-          y: Math.round(drag.startY + dy),
-        },
-      }));
-    },
-    [scale]
-  );
-
-  const handlePointerUp = useCallback(() => {
-    dragRef.current = null;
-  }, []);
-
   const handleHover = (item, e) => {
-    if (dragRef.current) return;
-    // Anchor in INNER (unscaled) canvas space
     const rect = e.currentTarget.getBoundingClientRect();
     const containerRect = containerRef.current.getBoundingClientRect();
-    const scale = containerRect.width / CANVAS_W;
+    const scaleX = containerRect.width / CANVAS_W;
+    const scaleY = containerRect.height / CANVAS_H;
     setHover(item);
     setAnchor({
-      left: (rect.left - containerRect.left) / scale,
-      right: (rect.right - containerRect.left) / scale,
-      top: (rect.top - containerRect.top) / scale,
-      bottom: (rect.bottom - containerRect.top) / scale,
+      left: (rect.left - containerRect.left) / scaleX,
+      right: (rect.right - containerRect.left) / scaleX,
+      top: (rect.top - containerRect.top) / scaleY,
+      bottom: (rect.bottom - containerRect.top) / scaleY,
     });
   };
 
@@ -209,18 +125,21 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
             </span>
           </div>
 
-          {/* <button
+          <button
             onClick={onReset}
             className="text-[12px] font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Upload New
-          </button> */}
+          </button>
         </div>
       </div>
 
       {/* Canvas */}
-      <div ref={canvasAreaRef} className="px-6 py-4">
+      <div
+        ref={canvasAreaRef}
+        className="px-0 py-2"
+      >
         <div
           ref={containerRef}
           className="relative mx-auto rounded-xl overflow-hidden bg-white"
@@ -240,26 +159,22 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
             style={{
               width: CANVAS_W,
               height: CANVAS_H,
-              transform: `scale(${scale})`,
+              transform: `scale(${scaleX}, ${scaleY})`,
               transformOrigin: "top left",
             }}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
           >
             <PhaseBackground />
-            <PhaseHeaders getPosition={getPosition} onDragStart={handleDragStart} />
-            <AxisLabels getPosition={getPosition} onDragStart={handleDragStart} />
-            <GMRBadge getPosition={getPosition} onDragStart={handleDragStart} />
+            <PhaseHeaders />
+            <AxisLabels />
+            <GMRBadge />
 
             {items.map((item, i) => (
               <CategoryCard
                 key={item.key}
                 item={item}
-                position={getPosition(item.key, item.pos)}
+                position={item.pos}
                 index={i}
                 isActive={hover?.key === item.key}
-                onDragStart={handleDragStart}
                 onHover={handleHover}
                 onLeave={handleLeave}
               />
