@@ -63,7 +63,7 @@ const canonicalCategory = (value) => {
   return aliases[key] || text;
 };
 
-// Group flat rows into phase → dimension → category structure
+// Group flat rows into phase → dimension → header → initiative → tasks structure
 export function groupData(rows) {
   const tree = {};
   const seen = new Set();
@@ -74,20 +74,33 @@ export function groupData(rows) {
       CANONICAL_DIMENSIONS,
       "People"
     );
-    const cat = canonicalCategory(r.category || r.Category);
-    const finalPhase = cat === "CoE Transition" ? "Enhance" : phase;
-    const finalDim = cat === "CoE Transition" ? "Process" : dim;
-    const task = String(r.task || r.Task || cat).trim();
+    const header = canonicalCategory(r.header || r.Header || r.category || r.Category);
+    const initiative = canonicalCategory(
+      r.initiative || r.Initiative || r.category || r.Category || header
+    );
+    const finalPhase = header === "CoE Transition" ? "Enhance" : phase;
+    const finalDim = header === "CoE Transition" ? "Process" : dim;
+    const task = String(r.task || r.Task || initiative || header).trim();
     const status = normStatus(r.status || r.Status);
-    if (!phase || !dim || !cat) continue;
-    const rowKey = `${finalPhase}::${finalDim}::${cat}::${task}::${status}`.toLowerCase();
+    if (!phase || !dim || !header) continue;
+    const rowKey = `${finalPhase}::${finalDim}::${header}::${initiative}::${task}::${status}`.toLowerCase();
     if (seen.has(rowKey)) continue;
     seen.add(rowKey);
 
     tree[finalPhase] ??= {};
     tree[finalPhase][finalDim] ??= {};
-    tree[finalPhase][finalDim][cat] ??= [];
-    tree[finalPhase][finalDim][cat].push({ task, status });
+    tree[finalPhase][finalDim][header] ??= { initiatives: {} };
+    tree[finalPhase][finalDim][header].initiatives[initiative] ??= [];
+    tree[finalPhase][finalDim][header].initiatives[initiative].push({
+      task,
+      status,
+      phase: finalPhase,
+      dimension: finalDim,
+      header,
+      initiative,
+      assignee: r.assignee || r.Assignee || r.details?.Assignee || "",
+      details: r.details || {},
+    });
   }
   return tree;
 }
@@ -193,9 +206,15 @@ export function flattenForRender(tree) {
   const fallbackSlots = {};
   for (const phase of Object.keys(tree)) {
     for (const dim of Object.keys(tree[phase])) {
-      for (const cat of Object.keys(tree[phase][dim])) {
-        const tasks = tree[phase][dim][cat];
-        const key = normKey(phase, dim, cat);
+      for (const header of Object.keys(tree[phase][dim])) {
+        const initiatives = tree[phase][dim][header].initiatives || {};
+        const initiativeEntries = Object.entries(initiatives).map(([initiativeName, tasks]) => ({
+          name: initiativeName,
+          tasks,
+          stats: computeStats(tasks),
+        }));
+        const tasks = initiativeEntries.flatMap((entry) => entry.tasks);
+        const key = normKey(phase, dim, header);
         const regionKey = `${phase}::${dim}`;
         const slot = fallbackSlots[regionKey] || 0;
         const pos = CATEGORY_POSITIONS[key] || getFallbackPosition(phase, dim, slot);
@@ -205,7 +224,9 @@ export function flattenForRender(tree) {
           key,
           phase,
           dimension: dim,
-          category: cat,
+          category: header,
+          header,
+          initiatives: initiativeEntries,
           tasks,
           pos,
           stats: computeStats(tasks),

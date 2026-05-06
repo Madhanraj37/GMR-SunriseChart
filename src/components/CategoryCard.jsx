@@ -15,6 +15,7 @@ export default function CategoryCard({
   onLeave,
   isActive,
   index,
+  onClick,
 }) {
   const { category, stats } = item;
 
@@ -49,6 +50,12 @@ export default function CategoryCard({
           fontSize: 13,
           textShadow: "0 1px 2px rgba(0,0,0,0.35)",
           textDecorationLine: "underline",
+        }}
+        onClick={() => onClick?.(item)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onClick?.(item);
         }}
       >
         {category}

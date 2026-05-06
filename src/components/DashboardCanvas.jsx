@@ -6,24 +6,63 @@ import PhaseBackground from "./PhaseBackground.jsx";
 import { PhaseHeaders, AxisLabels, GMRBadge } from "./Overlays.jsx";
 import CategoryCard from "./CategoryCard.jsx";
 import TooltipModal from "./TooltipModal.jsx";
+import HeaderDetailView from "./HeaderDetailView.jsx";
 
 import { CANVAS_W, CANVAS_H } from "../constants.js";
 import { flattenForRender, computeStats, getProgressColor } from "../utils.js";
 
-export default function DashboardCanvas({ tree, onReset, fileName }) {
+export default function DashboardCanvas({
+  tree,
+  onReset,
+  fileName,
+  googleSheetUrl,
+  onGoogleSheetUrlChange,
+  onStartSheetSync,
+  onStopSheetSync,
+  isSheetSyncing,
+  sheetSyncStatus,
+}) {
+  const [sheetUrlInput, setSheetUrlInput] = useState(googleSheetUrl || "");
   const [hover, setHover] = useState(null);
   const [anchor, setAnchor] = useState(null);
+  const [localTree, setLocalTree] = useState(tree);
+  const [selected, setSelected] = useState(null);
   const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const [availableWidth, setAvailableWidth] = useState(CANVAS_W);
   const toolbarRef = useRef(null);
   const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
-  const items = useMemo(() => flattenForRender(tree), [tree]);
+  useEffect(() => setLocalTree(tree), [tree]);
+  useEffect(() => setSheetUrlInput(googleSheetUrl || ""), [googleSheetUrl]);
+  const items = useMemo(() => flattenForRender(localTree), [localTree]);
+
+  const currentSelected = selected ? items.find((i) => i.key === selected) : null;
 
   const totalStats = useMemo(() => {
     const all = items.flatMap((i) => i.tasks);
     return computeStats(all);
   }, [items]);
+
+  const onCategoryClick = (item) => {
+    setSelected(item.key);
+  };
+
+  const toggleTaskStatus = (phase, dimension, header, initiative, taskIndex) => {
+    setLocalTree((prev) => {
+      try {
+        const next = JSON.parse(JSON.stringify(prev || {}));
+        const headerNode = next[phase]?.[dimension]?.[header];
+        const tasks = headerNode?.initiatives?.[initiative];
+        if (!tasks) return prev;
+        const t = tasks[taskIndex];
+        if (!t) return prev;
+        t.status = t.status === "done" ? "todo" : "done";
+        return next;
+      } catch (e) {
+        return prev;
+      }
+    });
+  };
 
   const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 0;
   const availableHeight = Math.max(360, viewportHeight - toolbarHeight - 24);
@@ -63,6 +102,24 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
     setHover(null);
     setAnchor(null);
   };
+
+  if (currentSelected) {
+    return (
+      <HeaderDetailView
+        item={currentSelected}
+        onBack={() => setSelected(null)}
+        onToggle={(initiativeName, idx) =>
+          toggleTaskStatus(
+            currentSelected.phase,
+            currentSelected.dimension,
+            currentSelected.header,
+            initiativeName,
+            idx
+          )
+        }
+      />
+    );
+  }
 
   return (
     <div
@@ -135,6 +192,40 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
         </div>
       </div>
 
+      <div className="px-6 py-2 border-b border-slate-200/50 bg-white/50 backdrop-blur sticky top-[64px] z-40 flex items-center justify-end gap-2">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm">
+          <input
+            value={sheetUrlInput}
+            onChange={(e) => {
+              setSheetUrlInput(e.target.value);
+              onGoogleSheetUrlChange?.(e.target.value);
+            }}
+            placeholder="Google Sheet URL"
+            className="w-[220px] bg-transparent px-2 py-0.5 text-[11px] text-slate-700 outline-none placeholder:text-slate-400"
+          />
+          <button
+            type="button"
+            onClick={() => onStartSheetSync?.(sheetUrlInput)}
+            disabled={isSheetSyncing}
+            className="rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSheetSyncing ? "Syncing" : "Sync Sheet"}
+          </button>
+          {isSheetSyncing ? (
+            <button
+              type="button"
+              onClick={onStopSheetSync}
+              className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Stop
+            </button>
+          ) : null}
+        </div>
+        {sheetSyncStatus ? (
+          <div className="text-[11px] text-slate-500 ml-2">{sheetSyncStatus}</div>
+        ) : null}
+      </div>
+
       {/* Canvas */}
       <div
         ref={canvasAreaRef}
@@ -177,6 +268,7 @@ export default function DashboardCanvas({ tree, onReset, fileName }) {
                 isActive={hover?.key === item.key}
                 onHover={handleHover}
                 onLeave={handleLeave}
+                onClick={onCategoryClick}
               />
             ))}
 

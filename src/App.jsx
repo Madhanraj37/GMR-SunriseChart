@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 
 import FileUpload from "./components/FileUpload.jsx";
@@ -9,9 +9,11 @@ import { sampleRows } from "./sampleData.js";
 const HEADER_ALIASES = {
   phase: ["phase", "stage", "maturityphase", "maturitystage"],
   dimension: ["dimension", "dim", "pillar", "track", "stream", "workstream", "area"],
-  category: ["category", "theme", "initiative", "capability", "milestone", "title", "heading"],
-  task: ["task", "activity", "action", "item", "description", "details", "deliverable"],
-  status: ["status", "progress", "state", "completion"],
+  header: ["header", "category", "theme", "milestone", "title", "heading"],
+  initiative: ["initiative", "subinitiative", "workstream", "item", "capability"],
+  task: ["task", "taskname", "activity", "action", "description", "details", "deliverable"],
+  status: ["status", "taskstatus", "progress", "state", "completion"],
+  assignee: ["assignee", "owner", "responsible", "assignedto"],
 };
 
 const PHASES = ["establish", "enhance", "optimize"];
@@ -107,13 +109,18 @@ const rowsFromSheet = (sheet, sheetName) => {
   let lastCategory = "";
 
   if (headerRow >= 0) {
-    const headers = rows[headerRow].map(findAlias);
+    const rawHeaders = rows[headerRow];
+    const headers = rawHeaders.map(findAlias);
     const dataRows = rows.slice(headerRow + 1);
 
     for (const cells of dataRows) {
       const row = {};
+      const details = {};
       headers.forEach((field, index) => {
-        if (field && !row[field]) row[field] = clean(cells[index]);
+        const headerName = clean(rawHeaders[index]);
+        const value = clean(cells[index]);
+        if (headerName && value) details[headerName] = value;
+        if (field && !row[field]) row[field] = value;
       });
 
       const rowPhase = row.phase || findKnownValue(cells, PHASES);
@@ -122,18 +129,22 @@ const rowsFromSheet = (sheet, sheetName) => {
       if (rowDimension) {
         lastDimension = canonicalDimension(rowDimension);
       }
-      if (row.category) lastCategory = row.category;
+      const header = row.header || row.category || lastCategory || row.initiative || getFirstText(cells);
+      if (header) lastCategory = header;
 
-      const category = row.category || lastCategory || row.task || getFirstText(cells);
-      const task = row.task || category;
-      if (!category && !task) continue;
+      const initiative = row.initiative || row.category || row.task || header;
+      const task = row.task || initiative || header;
+      if (!header && !initiative && !task) continue;
 
       parsed.push({
         phase: lastPhase || "Establish",
         dimension: lastDimension || "People",
-        category,
+        header,
+        initiative,
         task,
         status: row.status || "todo",
+        assignee: row.assignee || details.Assignee || "",
+        details,
       });
     }
 
@@ -154,16 +165,20 @@ const rowsFromSheet = (sheet, sheetName) => {
         !PHASES.includes(cell.toLowerCase()) &&
         !DIMENSIONS.includes(cell.toLowerCase())
     );
-    const category = meaningful[0];
-    const task = meaningful.slice(1).join(" - ") || category;
-    if (!category) continue;
+    const header = meaningful[0];
+    const initiative = meaningful[1] || header;
+    const task = meaningful.slice(2).join(" - ") || initiative || header;
+    if (!header) continue;
 
     parsed.push({
       phase: lastPhase || "Establish",
       dimension: lastDimension || "People",
-      category,
+      header,
+      initiative,
       task,
       status: "todo",
+      assignee: "",
+      details: {},
     });
   }
 
@@ -182,11 +197,32 @@ const rowsFromWorkbook = (workbook) => {
   return allRows;
 };
 
+const parseGoogleSheetUrl = (input) => {
+  const text = String(input || "").trim();
+  if (!text) return null;
+  const idMatch = text.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!idMatch) return null;
+  const gidMatch = text.match(/[?#&]gid=(\d+)/);
+  return { sheetId: idMatch[1], gid: gidMatch?.[1] || "0" };
+};
+
+const googleSheetCsvUrl = ({ sheetId, gid }) =>
+  `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${encodeURIComponent(gid || "0")}`;
+
+const rowsFromCsvText = (csvText) => {
+  const workbook = XLSX.read(csvText, { type: "string" });
+  return rowsFromWorkbook(workbook);
+};
+
 export default function App() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [sheetSyncUrl, setSheetSyncUrl] = useState("");
+  const [isSheetSyncing, setIsSheetSyncing] = useState(false);
+  const [sheetSyncStatus, setSheetSyncStatus] = useState("");
+  const sheetSyncRef = useRef(null);
 
   const handleFile = async (file) => {
     setError(null);
@@ -223,6 +259,77 @@ export default function App() {
     }
   };
 
+  const fetchAndApplySheet = async (url) => {
+    const parsed = parseGoogleSheetUrl(url);
+    if (!parsed) {
+      throw new Error("Paste a valid Google Sheets URL.");
+    }
+
+    const response = await fetch(googleSheetCsvUrl(parsed), { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Google Sheet fetch failed (${response.status})`);
+    }
+
+    const csvText = await response.text();
+    const rows = rowsFromCsvText(csvText);
+    if (!rows.length) {
+      throw new Error("No valid rows were found in the Google Sheet.");
+    }
+
+    const tree = groupData(rows);
+    if (Object.keys(tree).length === 0) {
+      throw new Error("No valid rows found in the Google Sheet.");
+    }
+
+    setData(tree);
+    setFileName("Google Sheet sync");
+    setSheetSyncStatus(`Updated ${new Date().toLocaleTimeString()}`);
+  };
+
+  const startGoogleSheetSync = async (url) => {
+    const trimmed = String(url || sheetSyncUrl || "").trim();
+    if (!trimmed) {
+      setError("Paste your Google Sheets URL first.");
+      return;
+    }
+
+    setError(null);
+    setSheetSyncUrl(trimmed);
+
+    try {
+      setIsSheetSyncing(true);
+      await fetchAndApplySheet(trimmed);
+
+      if (sheetSyncRef.current) {
+        clearInterval(sheetSyncRef.current);
+      }
+
+      sheetSyncRef.current = setInterval(() => {
+        fetchAndApplySheet(trimmed).catch((e) => {
+          setSheetSyncStatus(e.message || "Google Sheet update failed");
+        });
+      }, 10000);
+    } catch (e) {
+      setIsSheetSyncing(false);
+      setError(e.message || "Failed to start Google Sheet sync");
+    }
+  };
+
+  const stopGoogleSheetSync = () => {
+    if (sheetSyncRef.current) {
+      clearInterval(sheetSyncRef.current);
+      sheetSyncRef.current = null;
+    }
+    setIsSheetSyncing(false);
+    setSheetSyncStatus("");
+  };
+
+  useEffect(() => {
+    return () => {
+      if (sheetSyncRef.current) clearInterval(sheetSyncRef.current);
+    };
+  }, []);
+
   if (!data) {
     return <FileUpload onFile={handleFile} error={error} isLoading={loading} />;
   }
@@ -231,10 +338,17 @@ export default function App() {
     <DashboardCanvas
       tree={data}
       onReset={() => {
+        stopGoogleSheetSync();
         setData(null);
         setFileName("");
       }}
       fileName={fileName}
+      googleSheetUrl={sheetSyncUrl}
+      onGoogleSheetUrlChange={setSheetSyncUrl}
+      onStartSheetSync={startGoogleSheetSync}
+      onStopSheetSync={stopGoogleSheetSync}
+      isSheetSyncing={isSheetSyncing}
+      sheetSyncStatus={sheetSyncStatus}
     />
   );
 }
