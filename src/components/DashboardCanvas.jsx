@@ -148,7 +148,7 @@ export default function DashboardCanvas({
                 alt="HARTS"
                 className="h-10 w-auto object-contain"
               />
-              <span>HARTS Transformation Maturity Dashboard</span>
+              <span>HARTS - GMR Tranformation Maturity Dashboard</span>
             </div>
             <div className="text-[13px] text-slate-500">{fileName}</div>
           </div>
