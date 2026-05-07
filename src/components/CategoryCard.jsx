@@ -17,7 +17,7 @@ export default function CategoryCard({
   index,
   onClick,
 }) {
-  const { category, stats } = item;
+  const { category, stats, locked, lockedMessage } = item;
 
   // Width caps prevent overlap with curves
   const maxWidth =
@@ -64,6 +64,11 @@ export default function CategoryCard({
       {/* Percentage only */}
       <div className="mt-2 flex items-center">
         <ProgressCircle pct={stats.pct} size={42} />
+        {locked ? (
+          <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-white/90">
+            {lockedMessage || "Not yet started"}
+          </span>
+        ) : null}
       </div>
 
       {/* Hover glow */}

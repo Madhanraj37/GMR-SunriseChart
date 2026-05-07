@@ -104,37 +104,42 @@ export default function TooltipModal({ item, anchor, containerRect }) {
           </div>
         </div>
 
-        {/* Tasks list */}
-        <div className="max-h-[260px] overflow-y-auto px-2 py-2 thin-scroll">
-          {item.tasks.map((t, i) => {
-            const meta = STATUS_META[t.status] || STATUS_META.todo;
-            const Icon = STATUS_ICON[t.status] || Circle;
-            return (
-              <div
-                key={i}
-                className="flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
-              >
-                <Icon
-                  size={14}
-                  style={{
-                    color: meta.color,
-                    marginTop: 2,
-                    flexShrink: 0,
-                  }}
-                />
-                <span className="text-[12px] text-slate-700 leading-snug">
-                  {t.task}
-                </span>
-                <span
-                  className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
-                  style={{ background: meta.bg, color: meta.color }}
+        {item.locked ? (
+          <div className="px-4 py-4 text-sm text-slate-600">
+            {item.lockedMessage || "Not yet started. Complete the first two phases to unlock this phase."}
+          </div>
+        ) : (
+          <div className="max-h-[260px] overflow-y-auto px-2 py-2 thin-scroll">
+            {item.tasks.map((t, i) => {
+              const meta = STATUS_META[t.status] || STATUS_META.todo;
+              const Icon = STATUS_ICON[t.status] || Circle;
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
                 >
-                  {meta.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                  <Icon
+                    size={14}
+                    style={{
+                      color: meta.color,
+                      marginTop: 2,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span className="text-[12px] text-slate-700 leading-snug">
+                    {t.task}
+                  </span>
+                  <span
+                    className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
+                    style={{ background: meta.bg, color: meta.color }}
+                  >
+                    {meta.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </motion.div>
   );

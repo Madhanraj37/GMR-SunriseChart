@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
-import { RotateCcw } from "lucide-react";
+import { ExternalLink, RefreshCcw, Settings } from "lucide-react";
 
 import PhaseBackground from "./PhaseBackground.jsx";
 import { PhaseHeaders, AxisLabels, GMRBadge } from "./Overlays.jsx";
@@ -13,16 +13,16 @@ import { flattenForRender, computeStats, getProgressColor } from "../utils.js";
 
 export default function DashboardCanvas({
   tree,
-  onReset,
   fileName,
   googleSheetUrl,
-  onGoogleSheetUrlChange,
   onStartSheetSync,
-  onStopSheetSync,
   isSheetSyncing,
   sheetSyncStatus,
+  onOpenSettings,
+  onRefreshSheet,
+  isLoading,
+  error,
 }) {
-  const [sheetUrlInput, setSheetUrlInput] = useState(googleSheetUrl || "");
   const [hover, setHover] = useState(null);
   const [anchor, setAnchor] = useState(null);
   const [localTree, setLocalTree] = useState(tree);
@@ -33,17 +33,46 @@ export default function DashboardCanvas({
   const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
   useEffect(() => setLocalTree(tree), [tree]);
-  useEffect(() => setSheetUrlInput(googleSheetUrl || ""), [googleSheetUrl]);
   const items = useMemo(() => flattenForRender(localTree), [localTree]);
 
-  const currentSelected = selected ? items.find((i) => i.key === selected) : null;
+  const basePhaseTasks = useMemo(
+    () => items.filter((i) => i.phase !== "Optimize").flatMap((i) => i.tasks),
+    [items]
+  );
+  const basePhaseStats = useMemo(
+    () => computeStats(basePhaseTasks),
+    [basePhaseTasks]
+  );
+  const optimizeLocked = basePhaseStats.total === 0 || basePhaseStats.done < basePhaseStats.total;
+
+  const displayItems = useMemo(
+    () =>
+      items.map((item) =>
+        item.phase === "Optimize" && optimizeLocked
+          ? {
+              ...item,
+              tasks: [],
+              initiatives: [],
+              stats: computeStats([]),
+              locked: true,
+              lockedMessage: "Not yet started",
+            }
+          : item
+      ),
+    [items, optimizeLocked]
+  );
+
+  const currentSelected = selected
+    ? displayItems.find((i) => i.key === selected)
+    : null;
 
   const totalStats = useMemo(() => {
-    const all = items.flatMap((i) => i.tasks);
+    const all = displayItems.flatMap((i) => i.tasks);
     return computeStats(all);
-  }, [items]);
+  }, [displayItems]);
 
   const onCategoryClick = (item) => {
+    if (item.locked) return;
     setSelected(item.key);
   };
 
@@ -183,47 +212,46 @@ export default function DashboardCanvas({
           </div>
 
           <button
-            onClick={onReset}
+            onClick={onOpenSettings}
             className="text-[12px] font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Upload New
+            <Settings className="w-3.5 h-3.5" />
+            Settings
           </button>
         </div>
       </div>
 
-      <div className="px-6 py-2 border-b border-slate-200/50 bg-white/50 backdrop-blur sticky top-[64px] z-40 flex items-center justify-end gap-2">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 shadow-sm">
-          <input
-            value={sheetUrlInput}
-            onChange={(e) => {
-              setSheetUrlInput(e.target.value);
-              onGoogleSheetUrlChange?.(e.target.value);
-            }}
-            placeholder="Google Sheet URL"
-            className="w-[220px] bg-transparent px-2 py-0.5 text-[11px] text-slate-700 outline-none placeholder:text-slate-400"
-          />
-          <button
-            type="button"
-            onClick={() => onStartSheetSync?.(sheetUrlInput)}
-            disabled={isSheetSyncing}
-            className="rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSheetSyncing ? "Syncing" : "Sync Sheet"}
-          </button>
-          {isSheetSyncing ? (
-            <button
-              type="button"
-              onClick={onStopSheetSync}
-              className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
+      <div className="px-6 py-2 border-b border-slate-200/50 bg-white/50 backdrop-blur sticky top-[64px] z-40 flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2 text-[12px] text-slate-600">
+          <span className="font-semibold uppercase tracking-wider text-slate-500">Google Sheet</span>
+          {googleSheetUrl ? (
+            <a
+              href={googleSheetUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
             >
-              Stop
-            </button>
+              Open sheet
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          ) : (
+            <span className="text-[11px] text-slate-400">No sheet selected</span>
+          )}
+          {sheetSyncStatus ? (
+            <span className="text-[11px] text-slate-500">{sheetSyncStatus}</span>
           ) : null}
         </div>
-        {sheetSyncStatus ? (
-          <div className="text-[11px] text-slate-500 ml-2">{sheetSyncStatus}</div>
-        ) : null}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onRefreshSheet?.()}
+            disabled={isLoading}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCcw className="h-3.5 w-3.5" />
+            {isSheetSyncing ? "Syncing" : "Refresh"}
+          </button>
+        </div>
       </div>
 
       {/* Canvas */}
@@ -259,7 +287,7 @@ export default function DashboardCanvas({
             <AxisLabels />
             <GMRBadge />
 
-            {items.map((item, i) => (
+            {displayItems.map((item, i) => (
               <CategoryCard
                 key={item.key}
                 item={item}
@@ -321,7 +349,34 @@ export default function DashboardCanvas({
                 }}
               >
                 <div className="flex items-start justify-between">
-                  <div>
+                    </div>
+
+                    {!displayItems.length && (isLoading || error) ? (
+                      <div className="mx-auto mt-10 flex max-w-xl flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-6 py-6 text-center shadow-sm">
+                        <div className="text-lg font-bold text-slate-900">
+                          {isLoading ? "Loading Google Sheet…" : "Unable to load Google Sheet"}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          {error || "Waiting for your data to sync from the Google Sheet."}
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={onOpenSettings}
+                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            Open settings
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onStartSheetSync?.(googleSheetUrl)}
+                            className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800"
+                          >
+                            Retry sync
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="text-[11px] uppercase tracking-[0.15em] opacity-80 font-semibold">
                       Phase
                     </div>

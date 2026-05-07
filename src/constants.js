@@ -25,19 +25,19 @@ export const PHASE_BANDS = {
 // Hand-tuned against the second reference image. Coordinates are in canvas
 // space, and the task renderer adds HEADER_H below the phase header band.
 export const CATEGORY_POSITIONS = {
-  "Establish::People::Stable, Credible leadership pipeline": { x: 80, y: 46 },
-  "Establish::People::Self-sustaining Talent ecosystem": { x: 238, y: 46 },
-  "Establish::People::Performance Management": { x: 78, y: 162 },
-  "Establish::People::Design and Execute EVP": { x: 245, y: 141 },
-  "Establish::Process::Move from projects toContinuous Improvementculture": { x: 100, y: 300 },
-  "Establish::Process::Portfolio Expansion": { x: 278, y: 298 },
-  "Establish::Technology::S4HANA": { x: 382, y: 498 },
+  "Establish::People::Stable, Credible leadership pipeline": { x: 90, y: 35 },
+  "Establish::People::Self-sustaining Talent ecosystem": { x: 255, y: 46 },
+  "Establish::People::Performance Management": { x: 90, y: 168 },
+  "Establish::People::Design and Execute an attractive EVP": { x: 220, y: 150 },
+  "Establish::Process::Move from projects toContinuous Improvementculture": { x: 110, y: 304 },
+  "Establish::Process::Portfolio Expansion": { x: 270, y: 304 },
+  "Establish::Technology::S4HANA": { x: 330, y: 498 },
 
-  "Enhance::People::Brand Campaign": { x: 438, y: 42 },
+  "Enhance::People::Brand campaign": { x: 438, y: 38 },
   "Enhance::People::New Ways of Working": { x: 446, y: 122 },
   "Enhance::People::People Development": { x: 620, y: 62 },
   "Enhance::Process::CoE Transition": { x: 680, y: 220 },
-  "Enhance::Process::Continuous Improvement become a way of life": { x: 456, y: 264 },
+  "Enhance::Process::Continuous improvement becomes a way of life": { x: 456, y: 264 },
   "Enhance::Process::Continuous Improvement": { x: 456, y: 264 },
   "Enhance::Process::Core Business Function Pilot": { x: 516, y: 334 },
   "Enhance::Technology::Automation Strategy": { x: 570, y: 430 },

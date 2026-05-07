@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 
-import FileUpload from "./components/FileUpload.jsx";
 import DashboardCanvas from "./components/DashboardCanvas.jsx";
+import SettingsModal from "./components/SettingsModal.jsx";
 import { groupData } from "./utils.js";
-import { sampleRows } from "./sampleData.js";
 
 const HEADER_ALIASES = {
   phase: ["phase", "stage", "maturityphase", "maturitystage"],
@@ -214,87 +213,65 @@ const rowsFromCsvText = (csvText) => {
   return rowsFromWorkbook(workbook);
 };
 
+const SHEET_URL_STORAGE_KEY = "gmrSheetUrl";
+const DEFAULT_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1Dd3X5i8GyC2eMlSSoBM8ZzqGV0l7QfYRcgAsHpKEgQo/edit?pli=1&gid=1589356597#gid=1589356597";
+
 export default function App() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [fileName, setFileName] = useState("Google Sheet");
   const [sheetSyncUrl, setSheetSyncUrl] = useState("");
   const [isSheetSyncing, setIsSheetSyncing] = useState(false);
   const [sheetSyncStatus, setSheetSyncStatus] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const sheetSyncRef = useRef(null);
-
-  const handleFile = async (file) => {
-    setError(null);
-    setLoading(true);
-    try {
-      let rows;
-      if (file === "__SAMPLE__") {
-        rows = sampleRows;
-        setFileName("Sample roadmap data");
-      } else {
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        rows = rowsFromWorkbook(wb);
-        if (!rows.length) {
-          throw new Error(
-            "I could not find dashboard rows in this Excel file. Add at least a category or task column, or include roadmap text in the sheet."
-          );
-        }
-        setFileName(file.name);
-      }
-
-      const tree = groupData(rows);
-      if (Object.keys(tree).length === 0) {
-        throw new Error("No valid rows found in the file.");
-      }
-
-      // Brief processing delay for UX
-      await new Promise((r) => setTimeout(r, 350));
-      setData(tree);
-    } catch (e) {
-      setError(e.message || "Failed to parse file. Please check the format.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAndApplySheet = async (url) => {
     const parsed = parseGoogleSheetUrl(url);
     if (!parsed) {
       throw new Error("Paste a valid Google Sheets URL.");
     }
+    setLoading(true);
+    try {
+      const response = await fetch(googleSheetCsvUrl(parsed), { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`Google Sheet fetch failed (${response.status})`);
+      }
 
-    const response = await fetch(googleSheetCsvUrl(parsed), { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`Google Sheet fetch failed (${response.status})`);
+      const csvText = await response.text();
+      const rows = rowsFromCsvText(csvText);
+      if (!rows.length) {
+        throw new Error("No valid rows were found in the Google Sheet.");
+      }
+
+      const tree = groupData(rows);
+      if (Object.keys(tree).length === 0) {
+        throw new Error("No valid rows found in the Google Sheet.");
+      }
+
+      setData(tree);
+      setFileName("Google Sheet");
+      setSheetSyncStatus(`Updated ${new Date().toLocaleTimeString()}`);
+    } finally {
+      setLoading(false);
     }
-
-    const csvText = await response.text();
-    const rows = rowsFromCsvText(csvText);
-    if (!rows.length) {
-      throw new Error("No valid rows were found in the Google Sheet.");
-    }
-
-    const tree = groupData(rows);
-    if (Object.keys(tree).length === 0) {
-      throw new Error("No valid rows found in the Google Sheet.");
-    }
-
-    setData(tree);
-    setFileName("Google Sheet sync");
-    setSheetSyncStatus(`Updated ${new Date().toLocaleTimeString()}`);
   };
 
-  const startGoogleSheetSync = async (url) => {
+  const startGoogleSheetSync = async (url, { persist = true } = {}) => {
     const trimmed = String(url || sheetSyncUrl || "").trim();
     if (!trimmed) {
-      setError("Paste your Google Sheets URL first.");
-      return;
+      const message = "Add your Google Sheet URL in Settings.";
+      setError(message);
+      throw new Error(message);
     }
 
     setError(null);
     setSheetSyncUrl(trimmed);
+    if (persist) {
+      localStorage.setItem(SHEET_URL_STORAGE_KEY, trimmed);
+    }
 
     try {
       setIsSheetSyncing(true);
@@ -312,43 +289,53 @@ export default function App() {
     } catch (e) {
       setIsSheetSyncing(false);
       setError(e.message || "Failed to start Google Sheet sync");
+      throw e;
     }
-  };
-
-  const stopGoogleSheetSync = () => {
-    if (sheetSyncRef.current) {
-      clearInterval(sheetSyncRef.current);
-      sheetSyncRef.current = null;
-    }
-    setIsSheetSyncing(false);
-    setSheetSyncStatus("");
   };
 
   useEffect(() => {
+    const saved =
+      localStorage.getItem(SHEET_URL_STORAGE_KEY) || DEFAULT_SHEET_URL;
+    setSheetSyncUrl(saved);
+    startGoogleSheetSync(saved, { persist: true }).catch(() => {});
     return () => {
       if (sheetSyncRef.current) clearInterval(sheetSyncRef.current);
     };
   }, []);
 
-  if (!data) {
-    return <FileUpload onFile={handleFile} error={error} isLoading={loading} />;
-  }
-
   return (
-    <DashboardCanvas
-      tree={data}
-      onReset={() => {
-        stopGoogleSheetSync();
-        setData(null);
-        setFileName("");
-      }}
-      fileName={fileName}
-      googleSheetUrl={sheetSyncUrl}
-      onGoogleSheetUrlChange={setSheetSyncUrl}
-      onStartSheetSync={startGoogleSheetSync}
-      onStopSheetSync={stopGoogleSheetSync}
-      isSheetSyncing={isSheetSyncing}
-      sheetSyncStatus={sheetSyncStatus}
-    />
+    <>
+      <DashboardCanvas
+        tree={data}
+        fileName={fileName}
+        googleSheetUrl={sheetSyncUrl}
+        onStartSheetSync={(url) => startGoogleSheetSync(url, { persist: false })}
+        isSheetSyncing={isSheetSyncing}
+        sheetSyncStatus={sheetSyncStatus}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onRefreshSheet={() => startGoogleSheetSync(sheetSyncUrl, { persist: false })}
+        isLoading={loading}
+        error={error}
+      />
+      <SettingsModal
+        open={settingsOpen}
+        initialUrl={sheetSyncUrl || DEFAULT_SHEET_URL}
+        onClose={() => setSettingsOpen(false)}
+        isSaving={loading}
+        isSheetSyncing={isSheetSyncing}
+        onStopSync={() => {
+          if (sheetSyncRef.current) {
+            clearInterval(sheetSyncRef.current);
+            sheetSyncRef.current = null;
+          }
+          setIsSheetSyncing(false);
+          setSheetSyncStatus("");
+        }}
+        onSave={async (nextUrl) => {
+          await startGoogleSheetSync(nextUrl, { persist: true });
+          setSettingsOpen(false);
+        }}
+      />
+    </>
   );
 }
