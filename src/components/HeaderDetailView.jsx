@@ -79,7 +79,7 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
             <div className="mt-2 text-2xl font-bold text-slate-900">{item.header}</div>
             <div className="mt-1 text-sm text-slate-500">
               {item.locked
-                ? "Not yet started. Complete the first two phases to unlock this phase."
+                ? "Yet to begin. Complete the first two phases to unlock this phase."
                 : "Click tasks below to update initiative progress."}
             </div>
           </div>

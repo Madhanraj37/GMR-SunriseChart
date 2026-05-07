@@ -106,7 +106,7 @@ export default function TooltipModal({ item, anchor, containerRect }) {
 
         {item.locked ? (
           <div className="px-4 py-4 text-sm text-slate-600">
-            {item.lockedMessage || "Not yet started. Complete the first two phases to unlock this phase."}
+            {item.lockedMessage || "Yet to begin. Complete the first two phases to unlock this phase."}
           </div>
         ) : (
           <div className="max-h-[260px] overflow-y-auto px-2 py-2 thin-scroll">

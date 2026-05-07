@@ -55,7 +55,7 @@ export default function DashboardCanvas({
               initiatives: [],
               stats: computeStats([]),
               locked: true,
-              lockedMessage: "Not yet started",
+              lockedMessage: "Yet to begin",
             }
           : item
       ),

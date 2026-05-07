@@ -66,7 +66,7 @@ export default function CategoryCard({
         <ProgressCircle pct={stats.pct} size={42} />
         {locked ? (
           <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-white/90">
-            {lockedMessage || "Not yet started"}
+            {lockedMessage || "Yet to begin"}
           </span>
         ) : null}
       </div>
