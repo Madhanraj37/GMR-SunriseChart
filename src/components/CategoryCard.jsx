@@ -64,7 +64,7 @@ export default function CategoryCard({
       {/* Percentage only */}
       <div className="mt-2 flex items-center">
         <ProgressCircle pct={stats.pct} size={42} />
-        {locked ? (
+        {(locked || (item.phase === "Optimize" && stats.pct === 0)) ? (
           <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-white/90">
             {lockedMessage || "Yet to begin"}
           </span>
