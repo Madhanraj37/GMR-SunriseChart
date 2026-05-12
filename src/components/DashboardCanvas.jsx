@@ -35,41 +35,14 @@ export default function DashboardCanvas({
   useEffect(() => setLocalTree(tree), [tree]);
   const items = useMemo(() => flattenForRender(localTree), [localTree]);
 
-  const basePhaseTasks = useMemo(
-    () => items.filter((i) => i.phase !== "Optimize").flatMap((i) => i.tasks),
-    [items]
-  );
-  const basePhaseStats = useMemo(
-    () => computeStats(basePhaseTasks),
-    [basePhaseTasks]
-  );
-  const optimizeLocked = basePhaseStats.total === 0 || basePhaseStats.done < basePhaseStats.total;
-
-  const displayItems = useMemo(
-    () =>
-      items.map((item) =>
-        item.phase === "Optimize" && optimizeLocked
-          ? {
-              ...item,
-              tasks: [],
-              initiatives: [],
-              stats: computeStats([]),
-              locked: true,
-              lockedMessage: "Yet to begin",
-            }
-          : item
-      ),
-    [items, optimizeLocked]
-  );
-
   const currentSelected = selected
-    ? displayItems.find((i) => i.key === selected)
+    ? items.find((i) => i.key === selected)
     : null;
 
   const totalStats = useMemo(() => {
-    const all = displayItems.flatMap((i) => i.tasks);
+    const all = items.flatMap((i) => i.tasks);
     return computeStats(all);
-  }, [displayItems]);
+  }, [items]);
 
   const onCategoryClick = (item) => {
     if (item.locked) return;
@@ -287,7 +260,7 @@ export default function DashboardCanvas({
             <AxisLabels />
             <GMRBadge />
 
-            {displayItems.map((item, i) => (
+            {items.map((item, i) => (
               <CategoryCard
                 key={item.key}
                 item={item}
