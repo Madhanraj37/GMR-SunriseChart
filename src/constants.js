@@ -41,15 +41,15 @@ export const CATEGORY_POSITIONS = {
   "Enhance::Process::Continuous Improvement": { x: 456, y: 264 },
   "Enhance::Process::Core Business Function Pilot": { x: 516, y: 334 },
   "Enhance::Technology::Automation Strategy": { x: 570, y: 430 },
-  "Enhance::Technology::Reposition Tech": { x: 742, y: 392 },
 
   "Optimize::People::Performance Culture": { x: 812, y: 24 },
   "Optimize::People::Learning Organization": { x: 962, y: 24 },
-  "Optimize::People::Employee Experience": { x: 1114, y: 24 },
+  "Optimize::People::Employee Experience": { x: 1114, y: 22 },
   "Optimize::Process::Core Business Transitions": { x: 842, y: 206 },
   "Optimize::Process::Process Excellence": { x: 1052, y: 158 },
-  "Optimize::Technology::Tech-embedded Capability building": { x: 1158, y: 308 },
-  "Optimize::Technology::Tech-embedded Capability": { x: 1158, y: 308 },
+  "Optimize::Technology::Reposition Tech": { x: 940, y: 380 },
+  "Optimize::Technology::Tech-embedded Capability building": { x: 1180, y: 380 },
+  "Optimize::Technology::Tech-embedded Capability": { x: 1180, y: 380 },
 };
 
 export const FALLBACK_REGIONS = {

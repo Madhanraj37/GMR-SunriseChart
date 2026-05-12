@@ -1,14 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Circle } from "lucide-react";
 import ProgressCircle from "./ProgressCircle.jsx";
 import { PHASE_COLORS, STATUS_META } from "../constants.js";
-
-const STATUS_ICON = {
-  done: CheckCircle2,
-  inprogress: Clock,
-  todo: Circle,
-};
 
 export default function TooltipModal({ item, anchor, containerRect }) {
   if (!item || !anchor || !containerRect) return null;
@@ -110,34 +103,24 @@ export default function TooltipModal({ item, anchor, containerRect }) {
           </div>
         ) : (
           <div className="max-h-[260px] overflow-y-auto px-2 py-2 thin-scroll">
-            {item.tasks.map((t, i) => {
-              const meta = STATUS_META[t.status] || STATUS_META.todo;
-              const Icon = STATUS_ICON[t.status] || Circle;
-              return (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
-                >
-                  <Icon
-                    size={14}
-                    style={{
-                      color: meta.color,
-                      marginTop: 2,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span className="text-[12px] text-slate-700 leading-snug">
-                    {t.task}
-                  </span>
-                  <span
-                    className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
-                    style={{ background: meta.bg, color: meta.color }}
-                  >
-                    {meta.label}
-                  </span>
-                </div>
-              );
-            })}
+            {(item.initiatives || []).map((ini, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
+              >
+                <span
+                  className="mt-1.5 inline-block rounded-full shrink-0"
+                  style={{
+                    width: 6,
+                    height: 6,
+                    background: phaseColor,
+                  }}
+                />
+                <span className="text-[12px] text-slate-700 leading-snug">
+                  {ini.name}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>

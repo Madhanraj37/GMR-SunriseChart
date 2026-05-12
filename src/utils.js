@@ -59,6 +59,10 @@ const canonicalCategory = (value) => {
     techembeddedcapability: "Tech-embedded Capability building",
     techembeddedcapabilitybuilding: "Tech-embedded Capability building",
     corebusinessfunctionpilot: "Core Business Function Pilot",
+    repositiontech: "Reposition Tech",
+    repositiontechasenabler: "Reposition Tech",
+    repositiontechasenablerandalign: "Reposition Tech",
+    repositiontechasenablerandaligntechprocesspeople: "Reposition Tech",
   };
   return aliases[key] || text;
 };
@@ -78,8 +82,15 @@ export function groupData(rows) {
     const initiative = canonicalCategory(
       r.initiative || r.Initiative || r.category || r.Category || header
     );
-    const finalPhase = header === "CoE Transition" ? "Enhance" : phase;
-    const finalDim = header === "CoE Transition" ? "Process" : dim;
+    let finalPhase = phase;
+    let finalDim = dim;
+    if (header === "CoE Transition") {
+      finalPhase = "Enhance";
+      finalDim = "Process";
+    } else if (header === "Reposition Tech") {
+      finalPhase = "Optimize";
+      finalDim = "Technology";
+    }
     const task = String(r.task || r.Task || initiative || header).trim();
     const status = normStatus(r.status || r.Status);
     if (!phase || !dim || !header) continue;
