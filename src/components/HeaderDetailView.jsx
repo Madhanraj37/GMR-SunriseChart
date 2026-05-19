@@ -1,5 +1,12 @@
 import React from "react";
-import { ArrowLeft, CheckCircle2, Circle, LayoutGrid, ListChecks } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarRange,
+  CheckCircle2,
+  Circle,
+  LayoutGrid,
+  ListChecks,
+} from "lucide-react";
 
 import ProgressCircle from "./ProgressCircle.jsx";
 import { computeStats, getProgressColor } from "../utils.js";
@@ -15,13 +22,49 @@ const fieldLabel = (key) =>
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (m) => m.toUpperCase());
 
+const pickDetail = (details = {}, ...keys) => {
+  for (const k of keys) {
+    const v = details?.[k];
+    if (v != null && String(v).trim()) return String(v).trim();
+  }
+  return "";
+};
+
+// Hide keys already shown elsewhere on the card (task title, status chip,
+// assignee chip, dedicated date row, section header). Anything else from the
+// spreadsheet — Notes, etc. — renders as a labelled detail card.
+const HIDDEN_DETAIL_KEYS = new Set([
+  "phase",
+  "dimension",
+  "header",
+  "topic",
+  "category",
+  "initiative",
+  "task",
+  "tasks",
+  "action",
+  "actions",
+  "status",
+  "assignee",
+  "accountable",
+  "owner",
+  "start date",
+  "startdate",
+  "start",
+  "end date",
+  "enddate",
+  "end",
+  "due date",
+  "duedate",
+]);
+
 const visibleDetails = (details = {}) =>
   Object.entries(details).filter(
     ([key, value]) =>
       key &&
       value &&
-      !["phase", "dimension", "header", "initiative", "task", "status"].includes(
-        key.toLowerCase()
+      !HIDDEN_DETAIL_KEYS.has(
+        String(key).toLowerCase().replace(/\s+/g, " ").trim()
       )
   );
 
@@ -187,6 +230,24 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                       {initiative.tasks.map((task, idx) => {
                         const checked = task.status === "done";
                         const taskDetails = visibleDetails(task.details);
+                        const startDate = pickDetail(
+                          task.details,
+                          "Start Date",
+                          "Start",
+                          "StartDate",
+                          "start date",
+                          "start"
+                        );
+                        const endDate = pickDetail(
+                          task.details,
+                          "End Date",
+                          "End",
+                          "Due Date",
+                          "EndDate",
+                          "end date",
+                          "end",
+                          "due date"
+                        );
 
                         return (
                           <label
@@ -232,6 +293,23 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                                     </span>
                                   ) : null;
                                 })()}
+                              </div>
+
+                              <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600">
+                                <CalendarRange className="h-3.5 w-3.5 text-slate-500" />
+                                <span className="font-semibold uppercase tracking-wider text-[10px] text-slate-500">
+                                  Start
+                                </span>
+                                <span className="font-semibold text-slate-800">
+                                  {startDate || "—"}
+                                </span>
+                                <span className="mx-1 text-slate-300">·</span>
+                                <span className="font-semibold uppercase tracking-wider text-[10px] text-slate-500">
+                                  End
+                                </span>
+                                <span className="font-semibold text-slate-800">
+                                  {endDate || "—"}
+                                </span>
                               </div>
 
                               {taskDetails.length > 0 && (

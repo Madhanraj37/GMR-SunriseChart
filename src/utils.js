@@ -48,9 +48,31 @@ const compactKey = (value) =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
+// Index CATEGORY_POSITIONS by a casing/spacing/punctuation-insensitive key so
+// the same coordinates resolve regardless of how the topic is spelled in the
+// source sheet (e.g. "S4HANA" ↔ "S/4 HANA", "Brand campaign" ↔ "Brand
+// Campaign", "Move from projects toContinuous Improvementculture" ↔ "Move
+// from Projects to Continuous Improvement Culture").
+const CATEGORY_POSITIONS_BY_KEY = Object.entries(CATEGORY_POSITIONS).reduce(
+  (acc, [key, pos]) => {
+    acc[compactKey(key)] = pos;
+    return acc;
+  },
+  {}
+);
+
+const lookupCategoryPosition = (phase, dim, header) =>
+  CATEGORY_POSITIONS[normKey(phase, dim, header)] ||
+  CATEGORY_POSITIONS_BY_KEY[compactKey(`${phase}${dim}${header}`)];
+
 const canonicalCategory = (value) => {
   const text = String(value || "").trim();
   const key = compactKey(text);
+  // These aliases either drive phase routing below (CoE / Reposition Tech) or
+  // pin variant spellings onto a single canonical title that already has a
+  // position in CATEGORY_POSITIONS. Position resolution falls back to a
+  // compact-key match (see CATEGORY_POSITIONS_BY_KEY), so adding aliases here
+  // is only needed to control the *displayed* title text.
   const aliases = {
     coetransition: "CoE Transition",
     continuousimprovement: "Continuous Improvement become a way of life",
@@ -63,6 +85,7 @@ const canonicalCategory = (value) => {
     repositiontechasenabler: "Reposition Tech",
     repositiontechasenablerandalign: "Reposition Tech",
     repositiontechasenablerandaligntechprocesspeople: "Reposition Tech",
+    portfolioexpansioninhouseconsulting: "Portfolio Expansion",
   };
   return aliases[key] || text;
 };
@@ -228,8 +251,9 @@ export function flattenForRender(tree) {
         const key = normKey(phase, dim, header);
         const regionKey = `${phase}::${dim}`;
         const slot = fallbackSlots[regionKey] || 0;
-        const pos = CATEGORY_POSITIONS[key] || getFallbackPosition(phase, dim, slot);
-        if (!CATEGORY_POSITIONS[key]) fallbackSlots[regionKey] = slot + 1;
+        const fixedPos = lookupCategoryPosition(phase, dim, header);
+        const pos = fixedPos || getFallbackPosition(phase, dim, slot);
+        if (!fixedPos) fallbackSlots[regionKey] = slot + 1;
 
         items.push({
           key,

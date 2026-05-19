@@ -8,17 +8,22 @@ import { groupData } from "./utils.js";
 const HEADER_ALIASES = {
   phase: ["phase", "stage", "maturityphase", "maturitystage"],
   dimension: ["dimension", "dim", "pillar", "track", "stream", "workstream", "area"],
-  header: ["header", "category", "theme", "milestone", "title", "heading"],
-  initiative: ["initiative", "subinitiative", "workstream", "item", "capability"],
-  task: ["task", "taskname", "activity", "action", "description", "details", "deliverable"],
+  header: ["header", "topic", "theme", "milestone", "title", "heading"],
+  initiative: ["initiative", "subinitiative", "item", "capability"],
+  task: ["task", "tasks", "taskname", "activity", "action", "actions", "description", "details", "deliverable"],
   status: ["status", "taskstatus", "progress", "state", "completion"],
-  assignee: ["assignee", "owner", "responsible", "assignedto"],
+  assignee: ["assignee", "owner", "responsible", "assignedto", "accountable"],
 };
 
 const PHASES = ["establish", "enhance", "optimize"];
 const DIMENSIONS = ["people", "process", "technology"];
 const CANONICAL_PHASES = ["Establish", "Enhance", "Optimize"];
 const CANONICAL_DIMENSIONS = ["People", "Process", "Technology"];
+
+// Glyphs / emoji that prefix Topic and Initiative cells in the planner sheet.
+const LEADING_GLYPHS_RE = /^[\s▸◆◈❖▪▶☝⚡•·–—\- -⁯\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+/u;
+const stripGlyphs = (value) =>
+  String(value || "").replace(LEADING_GLYPHS_RE, "").trim();
 
 const clean = (value) =>
   String(value || "")
@@ -27,8 +32,12 @@ const clean = (value) =>
 
 const headerKey = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]/g, "");
 
+// "Category" is ambiguous: in some sheets it labels the dimension column
+// (People/Process/Technology); in others it labels the header column. We
+// resolve it later by peeking at the first non-empty value in the column.
 const findAlias = (value) => {
   const key = headerKey(value);
+  if (key === "category") return "category";
   return Object.entries(HEADER_ALIASES).find(([, aliases]) =>
     aliases.includes(key)
   )?.[0];
@@ -63,17 +72,52 @@ const findHeaderRow = (rows) => {
   for (let rowIndex = 0; rowIndex < searchLimit; rowIndex += 1) {
     const aliases = rows[rowIndex].map(findAlias).filter(Boolean);
     const unique = new Set(aliases);
-    if (unique.has("category") || unique.has("task")) fallback = rowIndex;
+    const headerLike =
+      unique.has("header") || unique.has("category") || unique.has("task");
+    if (headerLike) fallback = rowIndex;
     if (
       unique.size >= 2 &&
       (unique.has("phase") || unique.has("dimension")) &&
-      (unique.has("category") || unique.has("task"))
+      headerLike
     ) {
       return rowIndex;
     }
   }
 
   return fallback;
+};
+
+// Decide what each "category"-labelled column actually means by peeking at
+// the first non-empty cell: if it's a dimension keyword (people/process/
+// technology) the column holds dimension; otherwise it holds the header.
+const resolveCategoryColumns = (headers, dataRows) =>
+  headers.map((field, colIndex) => {
+    if (field !== "category") return field;
+    for (const row of dataRows) {
+      const value = clean(row[colIndex]).toLowerCase();
+      if (!value) continue;
+      return DIMENSIONS.includes(value) ? "dimension" : "header";
+    }
+    return "header";
+  });
+
+const detectBannerPhaseDim = (cells) => {
+  const flat = cells.map(clean).join(" ").toLowerCase();
+  if (!flat) return {};
+  const result = {};
+  for (const phase of PHASES) {
+    if (flat.includes(phase)) {
+      result.phase = canonicalPhase(phase);
+      break;
+    }
+  }
+  for (const dim of DIMENSIONS) {
+    if (flat.includes(dim)) {
+      result.dimension = canonicalDimension(dim);
+      break;
+    }
+  }
+  return result;
 };
 
 const rowsFromSheet = (sheet, sheetName) => {
@@ -106,13 +150,34 @@ const rowsFromSheet = (sheet, sheetName) => {
   let lastPhase = canonicalPhase(findKnownValue([sheetName], PHASES));
   let lastDimension = canonicalDimension(findKnownValue([sheetName], DIMENSIONS));
   let lastCategory = "";
+  let lastInitiative = "";
 
   if (headerRow >= 0) {
     const rawHeaders = rows[headerRow];
-    const headers = rawHeaders.map(findAlias);
+    const headers = resolveCategoryColumns(
+      rawHeaders.map(findAlias),
+      rows.slice(headerRow + 1)
+    );
     const dataRows = rows.slice(headerRow + 1);
 
+    // Indices of the columns whose presence makes a row a "data" row.
+    // If none of these have a value, the row is treated as a section banner.
+    const contentFields = new Set(["header", "initiative", "task", "status"]);
+    const contentCols = headers
+      .map((field, index) => (contentFields.has(field) ? index : -1))
+      .filter((index) => index >= 0);
+
     for (const cells of dataRows) {
+      const isContentRow = contentCols.some((index) => clean(cells[index]));
+
+      if (!isContentRow) {
+        // Banner row like " ESTABLISH PHASE" or "👤 PEOPLE" — carry phase/dim forward.
+        const banner = detectBannerPhaseDim(cells);
+        if (banner.phase) lastPhase = banner.phase;
+        if (banner.dimension) lastDimension = banner.dimension;
+        continue;
+      }
+
       const row = {};
       const details = {};
       headers.forEach((field, index) => {
@@ -122,17 +187,30 @@ const rowsFromSheet = (sheet, sheetName) => {
         if (field && !row[field]) row[field] = value;
       });
 
-      const rowPhase = row.phase || findKnownValue(cells, PHASES);
-      const rowDimension = row.dimension || findKnownValue(cells, DIMENSIONS);
-      if (rowPhase) lastPhase = canonicalPhase(rowPhase);
-      if (rowDimension) {
-        lastDimension = canonicalDimension(rowDimension);
-      }
-      const header = row.header || row.category || lastCategory || row.initiative || getFirstText(cells);
-      if (header) lastCategory = header;
+      // Only trust phase/dim from explicit columns — never from a stray cell on
+      // a data row (the May planner has unreliable per-row dimension values).
+      if (row.phase) lastPhase = canonicalPhase(row.phase);
+      if (row.dimension) lastDimension = canonicalDimension(row.dimension);
 
-      const initiative = row.initiative || row.category || row.task || header;
-      const task = row.task || initiative || header;
+      const explicitHeader = stripGlyphs(row.header);
+      const explicitInitiative = stripGlyphs(row.initiative);
+      const explicitTask = stripGlyphs(row.task);
+
+      // A new Topic resets the carried-forward initiative scope; a new
+      // Initiative cell within the same Topic updates it. Continuation rows
+      // (no Topic or Initiative filled) inherit the last seen values.
+      if (explicitHeader) {
+        lastCategory = explicitHeader;
+        lastInitiative = "";
+      }
+      if (explicitInitiative) {
+        lastInitiative = explicitInitiative;
+      }
+
+      const header = explicitHeader || lastCategory;
+      const initiative =
+        explicitInitiative || lastInitiative || explicitTask || header;
+      const task = explicitTask || initiative || header;
       if (!header && !initiative && !task) continue;
 
       parsed.push({
@@ -142,7 +220,7 @@ const rowsFromSheet = (sheet, sheetName) => {
         initiative,
         task,
         status: row.status || "todo",
-        assignee: row.assignee || details.Assignee || "",
+        assignee: row.assignee || details.Assignee || details.Accountable || "",
         details,
       });
     }
@@ -184,13 +262,36 @@ const rowsFromSheet = (sheet, sheetName) => {
   return parsed;
 };
 
+const sheetHasStatusColumn = (sheet) => {
+  if (!sheet?.["!ref"]) return false;
+  const range = XLSX.utils.decode_range(sheet["!ref"]);
+  const endRow = Math.min(range.e.r, range.s.r + 25);
+  const endCol = Math.min(range.e.c, range.s.c + MAX_SCAN_COLS - 1);
+  for (let rowIndex = range.s.r; rowIndex <= endRow; rowIndex += 1) {
+    for (let colIndex = range.s.c; colIndex <= endCol; colIndex += 1) {
+      const addr = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+      const value = sheet[addr]?.w ?? sheet[addr]?.v;
+      if (findAlias(value) === "status") return true;
+    }
+  }
+  return false;
+};
+
 const rowsFromWorkbook = (workbook) => {
   const allRows = [];
+  // Prefer sheets that actually carry a Status column; reference sheets
+  // without statuses would otherwise emit duplicate tasks marked "todo".
+  const sheetsWithStatus = workbook.SheetNames.filter((name) =>
+    sheetHasStatusColumn(workbook.Sheets[name])
+  );
+  const targets = sheetsWithStatus.length
+    ? sheetsWithStatus
+    : workbook.SheetNames;
 
-  for (const sheetName of workbook.SheetNames) {
+  for (const sheetName of targets) {
     const rows = rowsFromSheet(workbook.Sheets[sheetName], sheetName);
     if (rows.length) allRows.push(...rows);
-    if (allRows.length >= 120) break;
+    if (allRows.length >= 600) break;
   }
 
   return allRows;
@@ -205,8 +306,10 @@ const parseGoogleSheetUrl = (input) => {
   return { sheetId: idMatch[1], gid: gidMatch?.[1] || "0" };
 };
 
+// Use the /export endpoint rather than gviz/tq, because gviz collapses multi-
+// row headers (and our planner sheet relies on banner rows above the data).
 const googleSheetCsvUrl = ({ sheetId, gid }) =>
-  `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${encodeURIComponent(gid || "0")}`;
+  `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${encodeURIComponent(gid || "0")}`;
 
 const rowsFromCsvText = (csvText) => {
   const workbook = XLSX.read(csvText, { type: "string" });
@@ -215,7 +318,21 @@ const rowsFromCsvText = (csvText) => {
 
 const SHEET_URL_STORAGE_KEY = "gmrSheetUrl";
 const DEFAULT_SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/1Dd3X5i8GyC2eMlSSoBM8ZzqGV0l7QfYRcgAsHpKEgQo/edit?pli=1&gid=1589356597#gid=1589356597";
+  "https://docs.google.com/spreadsheets/d/1IGrokGDDFAChuZchlMlBdHqpSO4affQYv5_mrFIVfRI/edit?pli=1&gid=305519276#gid=305519276";
+
+// Sheet IDs we've previously shipped as the default. When a user has one of
+// these saved in localStorage, migrate them onto the current DEFAULT_SHEET_URL
+// so the dashboard immediately points at the live source.
+const SUPERSEDED_SHEET_IDS = ["1Dd3X5i8GyC2eMlSSoBM8ZzqGV0l7QfYRcgAsHpKEgQo"];
+
+const resolveInitialSheetUrl = () => {
+  const saved = localStorage.getItem(SHEET_URL_STORAGE_KEY);
+  if (!saved) return DEFAULT_SHEET_URL;
+  if (SUPERSEDED_SHEET_IDS.some((id) => saved.includes(id))) {
+    return DEFAULT_SHEET_URL;
+  }
+  return saved;
+};
 
 export default function App() {
   const [data, setData] = useState({});
@@ -294,10 +411,9 @@ export default function App() {
   };
 
   useEffect(() => {
-    const saved =
-      localStorage.getItem(SHEET_URL_STORAGE_KEY) || DEFAULT_SHEET_URL;
-    setSheetSyncUrl(saved);
-    startGoogleSheetSync(saved, { persist: true }).catch(() => {});
+    const initialUrl = resolveInitialSheetUrl();
+    setSheetSyncUrl(initialUrl);
+    startGoogleSheetSync(initialUrl, { persist: true }).catch(() => {});
     return () => {
       if (sheetSyncRef.current) clearInterval(sheetSyncRef.current);
     };
