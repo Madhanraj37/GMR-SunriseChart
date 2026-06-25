@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
-import { ExternalLink, RefreshCcw, Settings } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ExternalLink, RefreshCcw } from "lucide-react";
 
 import PhaseBackground from "./PhaseBackground.jsx";
 import { PhaseHeaders, AxisLabels, GMRBadge } from "./Overlays.jsx";
 import CategoryCard from "./CategoryCard.jsx";
 import TooltipModal from "./TooltipModal.jsx";
 import HeaderDetailView from "./HeaderDetailView.jsx";
+import AccountMenu from "./AccountMenu.jsx";
 
 import { CANVAS_W, CANVAS_H } from "../constants.js";
 import { flattenForRender, computeStats, getProgressColor } from "../utils.js";
@@ -14,11 +15,17 @@ import { flattenForRender, computeStats, getProgressColor } from "../utils.js";
 export default function DashboardCanvas({
   tree,
   fileName,
-  googleSheetUrl,
-  onStartSheetSync,
+  sourceUrl,
+  isAdmin = false,
+  userEmail,
+  userName,
+  accounts = [],
+  activeUsername,
+  onSignOut,
+  onAddAccount,
+  onSwitchAccount,
   isSheetSyncing,
   sheetSyncStatus,
-  onOpenSettings,
   onRefreshSheet,
   isLoading,
   error,
@@ -27,9 +34,8 @@ export default function DashboardCanvas({
   const [anchor, setAnchor] = useState(null);
   const [localTree, setLocalTree] = useState(tree);
   const [selected, setSelected] = useState(null);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
   const [availableWidth, setAvailableWidth] = useState(CANVAS_W);
-  const toolbarRef = useRef(null);
+  const [availableHeight, setAvailableHeight] = useState(CANVAS_H);
   const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
   useEffect(() => setLocalTree(tree), [tree]);
@@ -50,6 +56,7 @@ export default function DashboardCanvas({
   };
 
   const toggleTaskStatus = (phase, dimension, header, initiative, taskIndex) => {
+    if (!isAdmin) return; // view-only users cannot change task status
     setLocalTree((prev) => {
       try {
         const next = JSON.parse(JSON.stringify(prev || {}));
@@ -66,24 +73,65 @@ export default function DashboardCanvas({
     });
   };
 
-  const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 0;
-  const availableHeight = Math.max(360, viewportHeight - toolbarHeight - 24);
-  const scaleX = availableWidth / CANVAS_W;
-  const scaleY = availableHeight / CANVAS_H;
+  // ╔══════════════════════════════════════════════════════════════════════╗
+  // ║  👉 CHANGE THESE NUMBERS TO RESIZE THE DASHBOARD                       ║
+  // ║                                                                        ║
+  // ║  DASHBOARD_SIZE   = overall size (width + height together)             ║
+  // ║     1 = fit screen · 1.15 = 15% bigger · 0.9 = smaller                 ║
+  // ║                                                                        ║
+  // ║  DASHBOARD_HEIGHT = height ONLY (1 = normal, 0.9 = 10% shorter,        ║
+  // ║     0.8 = 20% shorter). Lower it to reduce the dashboard's height.     ║
+  // ║                                                                        ║
+  // ║  TOP_BOTTOM_SPACE = white space (px) added above AND below the chart   ║
+  // ║     inside the card. Raise it to match the left/right gutters.         ║
+  // ╚══════════════════════════════════════════════════════════════════════╝
+  const DASHBOARD_SIZE = 1.0;
+  const DASHBOARD_HEIGHT = 0.89;
+  const TOP_BOTTOM_SPACE = 20;
+
+  // Uniform scale (keeps the chart's aspect ratio — no horizontal stretch).
+  // First the largest scale that still fits inside the available area…
+  const fitScale = Math.max(
+    0.2,
+    Math.min(availableWidth / CANVAS_W, availableHeight / CANVAS_H)
+  );
+  // …then, when there's spare room, pick the scale whose leftover space is
+  // identical on the horizontal and vertical axes. Because the chart is
+  // centered, that makes the white margin equal on all four sides while
+  // keeping the dashboard as large as an even frame allows.
+  const equalMarginScale =
+    (availableWidth - availableHeight) / (CANVAS_W - CANVAS_H);
+  const baseScale =
+    equalMarginScale > 0 && equalMarginScale < fitScale
+      ? equalMarginScale
+      : fitScale;
+  const scaleX = baseScale * DASHBOARD_SIZE;
+  const scaleY = baseScale * DASHBOARD_SIZE * DASHBOARD_HEIGHT;
   const scaledWidth = CANVAS_W * scaleX;
   const scaledHeight = CANVAS_H * scaleY;
 
   const updateRect = useCallback(() => {
-    setViewportHeight(window.innerHeight);
-    if (canvasAreaRef.current) {
-      setAvailableWidth(canvasAreaRef.current.getBoundingClientRect().width);
-    }
+    if (!canvasAreaRef.current) return;
+    const rect = canvasAreaRef.current.getBoundingClientRect();
+    // Subtract the safety gutter (matches the canvas area's padding) so the
+    // framed chart never touches the edges but is otherwise as large as the
+    // equal-margin frame allows.
+    setAvailableWidth(Math.max(320, rect.width - 16));
+    setAvailableHeight(Math.max(260, rect.height - 16));
   }, []);
 
   useEffect(() => {
     updateRect();
     window.addEventListener("resize", updateRect);
-    return () => window.removeEventListener("resize", updateRect);
+    let observer;
+    if (canvasAreaRef.current && typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(updateRect);
+      observer.observe(canvasAreaRef.current);
+    }
+    return () => {
+      window.removeEventListener("resize", updateRect);
+      if (observer) observer.disconnect();
+    };
   }, [updateRect]);
 
   const handleHover = (item, e) => {
@@ -109,6 +157,7 @@ export default function DashboardCanvas({
     return (
       <HeaderDetailView
         item={currentSelected}
+        canEdit={isAdmin}
         onBack={() => setSelected(null)}
         onToggle={(initiativeName, idx) =>
           toggleTaskStatus(
@@ -125,120 +174,102 @@ export default function DashboardCanvas({
 
   return (
     <div
-      className="min-h-screen w-full"
+      className="flex h-screen w-full flex-col overflow-hidden"
       style={{ background: "linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)" }}
     >
-      {/* Top toolbar */}
-      <div
-        ref={toolbarRef}
-        className="px-6 py-3 flex items-center justify-between border-b border-slate-200/80 bg-white/70 backdrop-blur sticky top-0 z-40"
-      >
+      {/* Compact header */}
+      <header className="relative z-50 flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/80 px-6 py-2 backdrop-blur">
+        {/* Brand + two-line title */}
         <div className="flex items-center gap-3">
-          {/* <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(135deg, #E63946, #EE8A1A 50%, #1A2F5C)",
-            }}
-          >
-            <span className="text-white font-bold text-[12px]"></span>
-          </div> */}
-          <div>
-            <div className="flex items-center gap-3 text-[20px] font-bold text-slate-900">
-              <img
-                src="/harts-logo.png"
-                alt="HARTS"
-                className="h-10 w-auto object-contain"
-              />
-              <span>HARTS - GMR Tranformation Maturity Dashboard</span>
+          <img
+            src="/gmr-logo.png"
+            alt="GMR"
+            className="h-10 w-auto object-contain"
+          />
+          <div className="leading-none">
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+              Transformation Maturity
             </div>
-            <div className="text-[13px] text-slate-500">{fileName}</div>
+            <div className="mt-1 text-[21px] font-extrabold tracking-tight text-slate-900">
+              Dashboard
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
-            <div className="text-[15px] font-semibold text-slate-500 uppercase tracking-wider">
+        {/* Stats + actions + account */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3">
+            <span className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">
               Overall
-            </div>
-            <div
-              className="text-[15px] font-bold"
+            </span>
+            <span
+              className="text-[14px] font-bold"
               style={{ color: getProgressColor(totalStats.pct) }}
             >
               {totalStats.pct}%
-            </div>
-            <div className="text-[15px] text-slate-500">
-              ({totalStats.done}/{totalStats.total})
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 text-[15px]">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500" /> Done
             </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-amber-500" /> In Progress
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-500" /> To Do
+            <span className="text-[12px] font-medium text-slate-400">
+              {totalStats.done}/{totalStats.total}
             </span>
           </div>
 
-          <button
-            onClick={onOpenSettings}
-            className="text-[12px] font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1.5"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            Settings
-          </button>
-        </div>
-      </div>
-
-      <div className="px-6 py-2 border-b border-slate-200/50 bg-white/50 backdrop-blur sticky top-[64px] z-40 flex items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-[12px] text-slate-600">
-          <span className="font-semibold uppercase tracking-wider text-slate-500">Google Sheet</span>
-          {googleSheetUrl ? (
-            <a
-              href={googleSheetUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              Open sheet
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          ) : (
-            <span className="text-[11px] text-slate-400">No sheet selected</span>
-          )}
           {sheetSyncStatus ? (
-            <span className="text-[11px] text-slate-500">{sheetSyncStatus}</span>
+            <span className="hidden max-w-[150px] truncate text-[11px] text-slate-400 xl:inline">
+              {sheetSyncStatus}
+            </span>
           ) : null}
-        </div>
-        <div className="flex items-center gap-2">
+
           <button
             type="button"
             onClick={() => onRefreshSheet?.()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            title={isSheetSyncing ? "Syncing…" : "Refresh data"}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <RefreshCcw className="h-3.5 w-3.5" />
-            {isSheetSyncing ? "Syncing" : "Refresh"}
+            <RefreshCcw
+              className={`h-4 w-4 ${isSheetSyncing ? "animate-spin" : ""}`}
+            />
           </button>
+
+          {sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Open source file"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : null}
+
+          <AccountMenu
+            userName={userName}
+            userEmail={userEmail}
+            isAdmin={isAdmin}
+            accounts={accounts}
+            activeUsername={activeUsername}
+            onSignOut={onSignOut}
+            onAddAccount={onAddAccount}
+            onSwitchAccount={onSwitchAccount}
+          />
         </div>
-      </div>
+      </header>
 
       {/* Canvas */}
       <div
         ref={canvasAreaRef}
-        className="px-0 py-2"
+        className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-2"
       >
-        <div
+        <motion.div
           ref={containerRef}
-          className="relative mx-auto rounded-xl overflow-hidden bg-white"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="chart-font relative overflow-hidden rounded-xl bg-white"
           style={{
             width: scaledWidth,
-            maxWidth: "100%",
-            height: scaledHeight,
+            height: scaledHeight + 2 * TOP_BOTTOM_SPACE,
             boxShadow:
               "0 18px 48px rgba(15,35,72,0.14), 0 4px 12px rgba(15,35,72,0.06)",
             border: "1px solid rgba(163, 168, 179, 0.08)",
@@ -251,7 +282,7 @@ export default function DashboardCanvas({
             style={{
               width: CANVAS_W,
               height: CANVAS_H,
-              transform: `scale(${scaleX}, ${scaleY})`,
+              transform: `translateY(${TOP_BOTTOM_SPACE}px) scale(${scaleX}, ${scaleY})`,
               transformOrigin: "top left",
             }}
           >
@@ -288,93 +319,7 @@ export default function DashboardCanvas({
               )}
             </AnimatePresence>
           </div>
-        </div>
-
-        {/* <div className="max-w-[1480px] mx-auto mt-3 flex items-center justify-between gap-3 text-[11px] text-slate-500">
-          <span className="flex items-center gap-1.5">
-            <Move className="w-3.5 h-3.5" />
-            Drag any header, label, badge, or category block to arrange the dashboard.
-          </span>
-          <button
-            type="button"
-            onClick={() => setPositions({})}
-            disabled={!hasCustomLayout}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 bg-white text-slate-600 font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
-          >
-            <Undo2 className="w-3.5 h-3.5" />
-            Reset Layout
-          </button>
-        </div> */}
-
-        {/* Phase summary cards */}
-        {/* <div className="max-w-[1480px] mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {["Establish", "Enhance", "Optimize"].map((phase) => {
-            const phaseItems = items.filter((i) => i.phase === phase);
-            const allTasks = phaseItems.flatMap((i) => i.tasks);
-            const stats = computeStats(allTasks);
-            return (
-              <div
-                key={phase}
-                className="rounded-xl p-4 text-white relative overflow-hidden"
-                style={{
-                  background: `linear-gradient(135deg, ${PHASE_COLORS[phase].from}, ${PHASE_COLORS[phase].to})`,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.10)",
-                }}
-              >
-                <div className="flex items-start justify-between">
-                    </div>
-
-                    {!displayItems.length && (isLoading || error) ? (
-                      <div className="mx-auto mt-10 flex max-w-xl flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-6 py-6 text-center shadow-sm">
-                        <div className="text-lg font-bold text-slate-900">
-                          {isLoading ? "Loading Google Sheet…" : "Unable to load Google Sheet"}
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          {error || "Waiting for your data to sync from the Google Sheet."}
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            onClick={onOpenSettings}
-                            className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                          >
-                            Open settings
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onStartSheetSync?.(googleSheetUrl)}
-                            className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800"
-                          >
-                            Retry sync
-                          </button>
-                        </div>
-                      </div>
-                    ) : null}
-                    <div className="text-[11px] uppercase tracking-[0.15em] opacity-80 font-semibold">
-                      Phase
-                    </div>
-                    <div className="text-[20px] font-bold mt-0.5">{phase}</div>
-                    <div className="text-[12px] opacity-90 mt-1">
-                      {phaseItems.length} categories · {stats.total} tasks
-                    </div>
-                  </div>
-                  <ProgressCircle pct={stats.pct} size={52} />
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
-                  <span className="px-2 py-0.5 rounded bg-white/20">
-                    ✓ {stats.done} done
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-white/20">
-                    ⏱ {stats.inprog} in progress
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-white/20">
-                    ○ {stats.todo} to do
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div> */}
+        </motion.div>
       </div>
     </div>
   );

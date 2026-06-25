@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
+import { useMsal } from "@azure/msal-react";
 
 import DashboardCanvas from "./components/DashboardCanvas.jsx";
-import SettingsModal from "./components/SettingsModal.jsx";
 import { groupData } from "./utils.js";
+import { getFileLastModified, downloadFileBuffer } from "./graphExcel.js";
+import { isAdminEmail, EXCEL_FILE_URL, loginRequest } from "./authConfig.js";
 
 const HEADER_ALIASES = {
   phase: ["phase", "stage", "maturityphase", "maturitystage"],
@@ -297,161 +299,122 @@ const rowsFromWorkbook = (workbook) => {
   return allRows;
 };
 
-const parseGoogleSheetUrl = (input) => {
-  const text = String(input || "").trim();
-  if (!text) return null;
-  const idMatch = text.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (!idMatch) return null;
-  const gidMatch = text.match(/[?#&]gid=(\d+)/);
-  return { sheetId: idMatch[1], gid: gidMatch?.[1] || "0" };
-};
-
-// Use the /export endpoint rather than gviz/tq, because gviz collapses multi-
-// row headers (and our planner sheet relies on banner rows above the data).
-const googleSheetCsvUrl = ({ sheetId, gid }) =>
-  `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${encodeURIComponent(gid || "0")}`;
-
-const rowsFromCsvText = (csvText) => {
-  const workbook = XLSX.read(csvText, { type: "string" });
+const rowsFromArrayBuffer = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: "array" });
   return rowsFromWorkbook(workbook);
 };
 
-const SHEET_URL_STORAGE_KEY = "gmrSheetUrl";
-const DEFAULT_SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/1IGrokGDDFAChuZchlMlBdHqpSO4affQYv5_mrFIVfRI/edit?pli=1&gid=305519276#gid=305519276";
-
-// Sheet IDs we've previously shipped as the default. When a user has one of
-// these saved in localStorage, migrate them onto the current DEFAULT_SHEET_URL
-// so the dashboard immediately points at the live source.
-const SUPERSEDED_SHEET_IDS = ["1Dd3X5i8GyC2eMlSSoBM8ZzqGV0l7QfYRcgAsHpKEgQo"];
-
-const resolveInitialSheetUrl = () => {
-  const saved = localStorage.getItem(SHEET_URL_STORAGE_KEY);
-  if (!saved) return DEFAULT_SHEET_URL;
-  if (SUPERSEDED_SHEET_IDS.some((id) => saved.includes(id))) {
-    return DEFAULT_SHEET_URL;
-  }
-  return saved;
-};
+// How often to check SharePoint for changes (smart polling).
+const POLL_INTERVAL_MS = 30000;
 
 export default function App() {
+  const { instance, accounts } = useMsal();
+  const [activeUsername, setActiveUsername] = useState(
+    () => (instance.getActiveAccount() || instance.getAllAccounts()[0])?.username || ""
+  );
+  const account =
+    accounts.find((a) => a.username === activeUsername) ||
+    instance.getActiveAccount() ||
+    accounts[0];
+  const userEmail = account?.username || "";
+  const userName = account?.name || "";
+  const isAdmin = isAdminEmail(userEmail);
+
   const [data, setData] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [fileName, setFileName] = useState("Google Sheet");
-  const [sheetSyncUrl, setSheetSyncUrl] = useState("");
-  const [isSheetSyncing, setIsSheetSyncing] = useState(false);
-  const [sheetSyncStatus, setSheetSyncStatus] = useState("");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const sheetSyncRef = useRef(null);
+  const [syncStatus, setSyncStatus] = useState("");
+  const pollRef = useRef(null);
+  const lastModifiedRef = useRef(null);
 
-  const fetchAndApplySheet = async (url) => {
-    const parsed = parseGoogleSheetUrl(url);
-    if (!parsed) {
-      throw new Error("Paste a valid Google Sheets URL.");
-    }
+  // Fetch from SharePoint via Graph. Cheap last-modified check first; only
+  // download + re-parse the workbook when the file has actually changed.
+  const refresh = async ({ force = false } = {}) => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(googleSheetCsvUrl(parsed), { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`Google Sheet fetch failed (${response.status})`);
+      const lastModified = await getFileLastModified(instance);
+      if (!force && lastModified && lastModified === lastModifiedRef.current) {
+        setSyncStatus(`Up to date · checked ${new Date().toLocaleTimeString()}`);
+        return;
       }
 
-      const csvText = await response.text();
-      const rows = rowsFromCsvText(csvText);
+      const buffer = await downloadFileBuffer(instance);
+      const rows = rowsFromArrayBuffer(buffer);
       if (!rows.length) {
-        throw new Error("No valid rows were found in the Google Sheet.");
+        throw new Error("No valid rows were found in the Excel file.");
       }
 
       const tree = groupData(rows);
       if (Object.keys(tree).length === 0) {
-        throw new Error("No valid rows found in the Google Sheet.");
+        throw new Error("No valid rows found in the Excel file.");
       }
 
       setData(tree);
-      setFileName("Google Sheet");
-      setSheetSyncStatus(`Updated ${new Date().toLocaleTimeString()}`);
+      lastModifiedRef.current = lastModified;
+      setSyncStatus(`Updated ${new Date().toLocaleTimeString()}`);
+    } catch (e) {
+      setError(e.message || "Failed to load the SharePoint Excel file.");
+      setSyncStatus(e.message || "Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const startGoogleSheetSync = async (url, { persist = true } = {}) => {
-    const trimmed = String(url || sheetSyncUrl || "").trim();
-    if (!trimmed) {
-      const message = "Add your Google Sheet URL in Settings.";
-      setError(message);
-      throw new Error(message);
-    }
+  useEffect(() => {
+    refresh({ force: true });
+    pollRef.current = setInterval(() => {
+      refresh().catch(() => {});
+    }, POLL_INTERVAL_MS);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    setError(null);
-    setSheetSyncUrl(trimmed);
-    if (persist) {
-      localStorage.setItem(SHEET_URL_STORAGE_KEY, trimmed);
-    }
-
+  // Sign in an additional Microsoft account and make it active.
+  const handleAddAccount = async () => {
     try {
-      setIsSheetSyncing(true);
-      await fetchAndApplySheet(trimmed);
-
-      if (sheetSyncRef.current) {
-        clearInterval(sheetSyncRef.current);
+      const res = await instance.loginPopup({
+        ...loginRequest,
+        prompt: "select_account",
+      });
+      if (res?.account) {
+        instance.setActiveAccount(res.account);
+        setActiveUsername(res.account.username);
+        refresh({ force: true });
       }
-
-      sheetSyncRef.current = setInterval(() => {
-        fetchAndApplySheet(trimmed).catch((e) => {
-          setSheetSyncStatus(e.message || "Google Sheet update failed");
-        });
-      }, 10000);
     } catch (e) {
-      setIsSheetSyncing(false);
-      setError(e.message || "Failed to start Google Sheet sync");
-      throw e;
+      // user closed the popup / cancelled — nothing to do
     }
   };
 
-  useEffect(() => {
-    const initialUrl = resolveInitialSheetUrl();
-    setSheetSyncUrl(initialUrl);
-    startGoogleSheetSync(initialUrl, { persist: true }).catch(() => {});
-    return () => {
-      if (sheetSyncRef.current) clearInterval(sheetSyncRef.current);
-    };
-  }, []);
+  // Switch the active account between already signed-in accounts.
+  const handleSwitchAccount = (acc) => {
+    if (!acc) return;
+    instance.setActiveAccount(acc);
+    setActiveUsername(acc.username);
+    refresh({ force: true });
+  };
 
   return (
-    <>
-      <DashboardCanvas
-        tree={data}
-        fileName={fileName}
-        googleSheetUrl={sheetSyncUrl}
-        onStartSheetSync={(url) => startGoogleSheetSync(url, { persist: false })}
-        isSheetSyncing={isSheetSyncing}
-        sheetSyncStatus={sheetSyncStatus}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onRefreshSheet={() => startGoogleSheetSync(sheetSyncUrl, { persist: false })}
-        isLoading={loading}
-        error={error}
-      />
-      <SettingsModal
-        open={settingsOpen}
-        initialUrl={sheetSyncUrl || DEFAULT_SHEET_URL}
-        onClose={() => setSettingsOpen(false)}
-        isSaving={loading}
-        isSheetSyncing={isSheetSyncing}
-        onStopSync={() => {
-          if (sheetSyncRef.current) {
-            clearInterval(sheetSyncRef.current);
-            sheetSyncRef.current = null;
-          }
-          setIsSheetSyncing(false);
-          setSheetSyncStatus("");
-        }}
-        onSave={async (nextUrl) => {
-          await startGoogleSheetSync(nextUrl, { persist: true });
-          setSettingsOpen(false);
-        }}
-      />
-    </>
+    <DashboardCanvas
+      tree={data}
+      fileName="SharePoint Excel"
+      sourceUrl={EXCEL_FILE_URL}
+      isAdmin={isAdmin}
+      userEmail={userEmail}
+      userName={userName}
+      accounts={accounts}
+      activeUsername={activeUsername}
+      onSignOut={() => instance.logoutPopup()}
+      onAddAccount={handleAddAccount}
+      onSwitchAccount={handleSwitchAccount}
+      isSheetSyncing={loading}
+      sheetSyncStatus={syncStatus}
+      onRefreshSheet={() => refresh({ force: true })}
+      isLoading={loading}
+      error={error}
+    />
   );
 }

@@ -4,18 +4,32 @@ import {
   CalendarRange,
   CheckCircle2,
   Circle,
+  Clock,
   LayoutGrid,
   ListChecks,
 } from "lucide-react";
 
 import ProgressCircle from "./ProgressCircle.jsx";
 import { computeStats, getProgressColor } from "../utils.js";
+import { PHASE_COLORS } from "../constants.js";
 
 const statusLabel = (status) => {
   if (status === "done") return "Completed";
   if (status === "inprogress") return "In progress";
   return "To do";
 };
+
+// Status pill styling — In progress is orange, Done is green, To do is grey.
+const STATUS_STYLES = {
+  done: { bg: "bg-emerald-100", text: "text-emerald-700", Icon: CheckCircle2 },
+  inprogress: { bg: "bg-orange-100", text: "text-orange-700", Icon: Clock },
+  todo: { bg: "bg-slate-100", text: "text-slate-600", Icon: Circle },
+};
+
+// Display order for actions: To do first, then In progress, then Completed.
+const STATUS_ORDER = { todo: 0, inprogress: 1, done: 2 };
+const byStatusOrder = (a, b) =>
+  (STATUS_ORDER[a.status] ?? 0) - (STATUS_ORDER[b.status] ?? 0);
 
 const fieldLabel = (key) =>
   String(key || "")
@@ -68,7 +82,7 @@ const visibleDetails = (details = {}) =>
       )
   );
 
-export default function HeaderDetailView({ item, onBack, onToggle }) {
+export default function HeaderDetailView({ item, onBack, onToggle, canEdit = true }) {
   if (!item) return null;
 
   const allTasks = item.tasks || [];
@@ -76,38 +90,42 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
   const progressColor = getProgressColor(stats.pct);
   const initiatives = item.initiatives || [];
   const headerDetails = visibleDetails(allTasks[0]?.details);
+  const phaseColor = PHASE_COLORS[item.phase]?.solid || "#00437A";
 
   return (
-    <div className="min-h-screen w-full bg-slate-50">
+    <div className="min-h-screen w-full bg-white">
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-5 py-4">
+        <div className="h-1 w-full" style={{ background: phaseColor }} />
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-6 py-2.5">
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to headers
           </button>
 
           <div className="text-center">
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Header details
             </div>
-            <div className="text-lg font-bold text-slate-900">{item.header}</div>
-            <div className="text-sm text-slate-500">
+            <div className="text-[17px] font-bold text-slate-900">{item.header}</div>
+            <div className="text-[13px] text-slate-500">
               {item.phase} · {item.dimension}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
             <div>
-              <div className="text-xs uppercase tracking-wider text-slate-500">Progress</div>
-              <div className="text-xl font-bold" style={{ color: progressColor }}>
+              <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">
+                Progress
+              </div>
+              <div className="text-[18px] font-bold" style={{ color: progressColor }}>
                 {stats.pct}%
               </div>
             </div>
-            <ProgressCircle pct={stats.pct} size={48} />
+            <ProgressCircle pct={stats.pct} size={44} />
           </div>
         </div>
       </div>
@@ -123,52 +141,75 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
             <div className="mt-1 text-sm text-slate-500">
               {item.locked
                 ? "Yet to begin. Complete the first two phases to unlock this phase."
-                : "Click tasks below to update initiative progress."}
+                : "Review the initiatives and actions tracked under this header."}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Tasks
-              </div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">{stats.total}</div>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Done
-              </div>
-              <div className="mt-1 text-2xl font-bold text-emerald-600">{stats.done}</div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <ListChecks className="h-4 w-4" />
+              <ListChecks className="h-4 w-4 text-slate-400" />
               Status summary
             </div>
-            <div className="mt-3 space-y-2 text-sm text-slate-600">
-              <div className="flex items-center justify-between">
-                <span>Done</span>
-                <span className="font-semibold text-emerald-600">{stats.done}</span>
+
+            <div className="mt-3 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Total actions
+                </div>
+                <div className="mt-0.5 text-3xl font-bold text-slate-900">{stats.total}</div>
               </div>
-              <div className="flex items-center justify-between">
-                <span>In progress</span>
-                <span className="font-semibold text-amber-600">{stats.inprog}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>To do</span>
-                <span className="font-semibold text-rose-600">{stats.todo}</span>
-              </div>
+              <ProgressCircle pct={stats.pct} size={52} />
+            </div>
+
+            {/* Distribution bar (To do · In progress · Completed) */}
+            <div className="mt-4 flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                style={{
+                  width: `${stats.total ? (stats.todo / stats.total) * 100 : 0}%`,
+                  background: "#cbd5e1",
+                }}
+              />
+              <div
+                style={{
+                  width: `${stats.total ? (stats.inprog / stats.total) * 100 : 0}%`,
+                  background: "#f97316",
+                }}
+              />
+              <div
+                style={{
+                  width: `${stats.total ? (stats.done / stats.total) * 100 : 0}%`,
+                  background: "#10b981",
+                }}
+              />
+            </div>
+
+            {/* Breakdown — To do, In progress, Completed (each shown once) */}
+            <div className="mt-4 space-y-2.5 text-sm">
+              {[
+                { label: "To do", count: stats.todo, dot: "#94a3b8" },
+                { label: "In progress", count: stats.inprog, dot: "#f97316" },
+                { label: "Completed", count: stats.done, dot: "#10b981" },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-600">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ background: row.dot }}
+                    />
+                    {row.label}
+                  </span>
+                  <span className="font-semibold text-slate-900">{row.count}</span>
+                </div>
+              ))}
             </div>
           </div>
 
           {headerDetails.length > 0 && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="text-sm font-semibold text-slate-700">Excel fields</div>
               <div className="mt-3 space-y-2">
                 {headerDetails.map(([key, value]) => (
-                  <div key={key} className="rounded-lg bg-white px-3 py-2">
+                  <div key={key} className="rounded-lg bg-slate-50 px-3 py-2">
                     <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                       {fieldLabel(key)}
                     </div>
@@ -187,11 +228,8 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                 Initiative breakdown
               </div>
               <div className="mt-1 text-lg font-bold text-slate-900">
-                Tasks grouped under each initiative
+                Actions grouped under each initiative
               </div>
-            </div>
-            <div className="text-sm text-slate-500">
-              Each initiative completes when all of its tasks are checked.
             </div>
           </div>
           {item.locked ? (
@@ -205,7 +243,11 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                 const sectionColor = getProgressColor(sectionStats.pct);
 
                 return (
-                  <section key={initiative.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <section
+                    key={initiative.name}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    style={{ borderLeft: `4px solid ${phaseColor}` }}
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -213,7 +255,7 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                         </div>
                         <div className="mt-1 text-xl font-bold text-slate-900">{initiative.name}</div>
                       </div>
-                      <div className="flex items-center gap-3 rounded-xl bg-white px-3 py-2 shadow-sm">
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
                         <div className="text-right">
                           <div className="text-[11px] uppercase tracking-wider text-slate-500">
                             Progress
@@ -227,8 +269,9 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                     </div>
 
                     <div className="mt-4 grid gap-3">
-                      {initiative.tasks.map((task, idx) => {
-                        const checked = task.status === "done";
+                      {[...initiative.tasks].sort(byStatusOrder).map((task, idx) => {
+                        const status = STATUS_STYLES[task.status] || STATUS_STYLES.todo;
+                        const StatusIcon = status.Icon;
                         const taskDetails = visibleDetails(task.details);
                         const startDate = pickDetail(
                           task.details,
@@ -250,32 +293,17 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                         );
 
                         return (
-                          <label
+                          <div
                             key={`${initiative.name}-${idx}-${task.task}`}
-                            className="flex cursor-pointer items-start gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-50"
+                            className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                           >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => onToggle(initiative.name, idx)}
-                              className="mt-1 h-5 w-5 accent-emerald-600"
-                            />
-
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <div className="text-base font-semibold text-slate-900">{task.task}</div>
                                 <span
-                                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                    checked
-                                      ? "bg-emerald-100 text-emerald-700"
-                                      : "bg-slate-200 text-slate-600"
-                                  }`}
+                                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${status.bg} ${status.text}`}
                                 >
-                                  {checked ? (
-                                    <CheckCircle2 className="h-3.5 w-3.5" />
-                                  ) : (
-                                    <Circle className="h-3.5 w-3.5" />
-                                  )}
+                                  <StatusIcon className="h-3.5 w-3.5" />
                                   {statusLabel(task.status)}
                                 </span>
                                 {(() => {
@@ -325,7 +353,7 @@ export default function HeaderDetailView({ item, onBack, onToggle }) {
                                 </div>
                               )}
                             </div>
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
