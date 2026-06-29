@@ -5,25 +5,26 @@
 // is already wired up.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// All values come from environment variables (see .env locally, and the Vercel
+// project settings in production). Vite only exposes vars prefixed with VITE_.
+
 // From: App registration → Overview → "Application (client) ID"
-export const CLIENT_ID = "a90bc847-e837-4a9f-85ce-25d8e040ecd6";
+export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 
-// ⬇️ FILL — From: App registration → Overview → "Directory (tenant) ID"
-//    (You have this; paste the GUID here, e.g. "1234abcd-....")
-export const TENANT_ID = "7c51239d-08e0-4f24-92b0-68ca7dccba54";
+// From: App registration → Overview → "Directory (tenant) ID"
+export const TENANT_ID = import.meta.env.VITE_TENANT_ID;
 
-// The SharePoint Excel file link (the share URL you copied from the browser).
-// The app resolves the file from this link via the Graph /shares endpoint —
-// no Site/Drive/Item IDs needed.
-export const EXCEL_FILE_URL =
-  "https://gobalharts.sharepoint.com/:x:/s/HARTSConsulting/IQBgN4h9G5PsR6cipclc2L1fAcuDGYPB6ZdIVeoNsV3nCFo?e=hWMJDK";
+// The SharePoint Excel file link (share URL copied from the browser). The app
+// resolves the file from this link via the Graph /shares endpoint — no
+// Site/Drive/Item IDs needed.
+export const EXCEL_FILE_URL = import.meta.env.VITE_EXCEL_FILE_URL;
 
-// ⬇️ FILL — Emails allowed to toggle task completion (everyone else is read-only).
-//    Use lowercase. The other assigned users can VIEW but not edit.
-export const ADMIN_EMAILS = [
-  "madhanraj.c@globalharts.com",
-  // "jeya.bharathi@globalharts.com",
-];
+// Comma-separated list of emails allowed to toggle task completion (everyone
+// else is read-only). e.g. VITE_ADMIN_EMAILS="a@x.com,b@x.com"
+export const ADMIN_EMAILS = String(import.meta.env.VITE_ADMIN_EMAILS || "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Below this line you normally don't need to change anything.
