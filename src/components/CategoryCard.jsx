@@ -49,7 +49,7 @@ export default function CategoryCard({
       <div
         className="text-white font-semibold decoration-white/70 underline-offset-0 leading-tight italic"
         style={{
-          fontSize: 13,
+          fontSize: 14,
           textShadow: "0 1px 2px rgba(0,0,0,0.35)",
           textDecorationLine: "underline",
         }}
@@ -65,7 +65,7 @@ export default function CategoryCard({
 
       {/* RAG status */}
       <div className="mt-2 flex items-center">
-        <RagIcon level={rag} size={32} title={RAG_LABEL[rag]} />
+        <RagIcon level={rag} size={34} title={RAG_LABEL[rag]} />
       </div>
 
       {/* Hover glow */}

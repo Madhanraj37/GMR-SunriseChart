@@ -466,10 +466,7 @@ export default function HeaderDetailView({ item, onBack, userName, userEmail }) 
                   Dashboard
                 </button>
               </div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Topic
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <RagIcon
                   level={headerLevel}
                   size={34}

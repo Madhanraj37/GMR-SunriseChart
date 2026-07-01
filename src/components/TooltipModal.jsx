@@ -1,7 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import ProgressCircle from "./ProgressCircle.jsx";
+import RagIcon from "./RagIcon.jsx";
 import { PHASE_COLORS } from "../constants.js";
+import { initiativeRag, RAG_LABEL } from "../utils.js";
 
 export default function TooltipModal({ item, anchor, containerRect }) {
   if (!item || !anchor || !containerRect) return null;
@@ -57,6 +58,9 @@ export default function TooltipModal({ item, anchor, containerRect }) {
             className="text-white font-bold mt-1 leading-tight"
             style={{ fontSize: 14 }}
           >
+            <span className="uppercase tracking-wide" style={{ opacity: 0.75 }}>
+              Topic:{" "}
+            </span>
             {item.category}
           </div>
         </div>
@@ -66,27 +70,27 @@ export default function TooltipModal({ item, anchor, containerRect }) {
             {item.lockedMessage || "Yet to begin. Complete the first two phases to unlock this phase."}
           </div>
         ) : (
-          <div className="max-h-[260px] overflow-y-auto px-2 py-2 thin-scroll">
-            {(item.initiatives || []).map((ini, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
-              >
-                <span
-                  className="inline-block rounded-full shrink-0"
-                  style={{
-                    width: 6,
-                    height: 6,
-                    background: phaseColor,
-                  }}
-                />
-                <span className="flex-1 text-[12px] text-slate-700 leading-snug">
-                  {ini.name}
-                </span>
-                <ProgressCircle pct={ini.stats?.pct ?? 0} size={30} />
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="px-4 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+              Initiatives
+            </div>
+            <div className="max-h-[260px] overflow-y-auto px-2 pb-2 thin-scroll">
+              {(item.initiatives || []).map((ini, i) => {
+                const rag = initiativeRag(ini);
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
+                  >
+                    <RagIcon level={rag} size={22} title={RAG_LABEL[rag]} />
+                    <span className="flex-1 text-[12px] text-slate-700 leading-snug">
+                      {ini.name}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </motion.div>
