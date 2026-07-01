@@ -99,8 +99,13 @@ export default function RiskCard({ risk }) {
             RPN
           </span>
         </span>
-        <div className="min-w-0 flex-1 text-[15px] font-bold leading-snug text-slate-900">
-          {risk.failureMode}
+        <div className="min-w-0 flex-1">
+          <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-slate-400">
+            Failure Mode
+          </div>
+          <div className="mt-0.5 text-[15px] font-bold leading-snug text-slate-900">
+            {risk.failureMode}
+          </div>
         </div>
         <span
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold"
