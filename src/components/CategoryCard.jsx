@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import RagIcon from "./RagIcon.jsx";
 import { HEADER_H } from "../constants.js";
-import { headerRag, RAG_LABEL } from "../utils.js";
+import { headerRag, headerRagTooltip } from "../utils.js";
 
 /**
  * CategoryCard
@@ -45,27 +45,31 @@ export default function CategoryCard({
       onMouseLeave={onLeave}
       whileHover={{ scale: 1.06 }}
     >
-      {/* Title */}
-      <div
-        className="text-white font-semibold decoration-white/70 underline-offset-0 leading-tight italic"
-        style={{
-          fontSize: 14,
-          textShadow: "0 1px 2px rgba(0,0,0,0.35)",
-          textDecorationLine: "underline",
-        }}
-        onClick={() => onClick?.(item)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onClick?.(item);
-        }}
-      >
-        {category}
-      </div>
-
-      {/* RAG status */}
-      <div className="mt-2 flex items-center">
-        <RagIcon level={rag} size={34} title={RAG_LABEL[rag]} />
+      {/* RAG dot to the left of the title */}
+      <div className="flex items-start gap-1.5">
+        <span className="mt-[3px]">
+          <RagIcon
+            level={rag}
+            size={13}
+            title={headerRagTooltip(item.initiatives)}
+          />
+        </span>
+        <div
+          className="flex-1 text-white font-semibold decoration-white/70 underline-offset-0 leading-tight italic"
+          style={{
+            fontSize: 14,
+            textShadow: "0 1px 2px rgba(0,0,0,0.35)",
+            textDecorationLine: "underline",
+          }}
+          onClick={() => onClick?.(item)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") onClick?.(item);
+          }}
+        >
+          {category}
+        </div>
       </div>
 
       {/* Hover glow */}

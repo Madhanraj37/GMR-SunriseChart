@@ -106,10 +106,20 @@ export const RAG_COLORS = {
   purple: "#8b5cf6",
 };
 export const RAG_LABEL = {
-  green: "On track",
-  amber: "At risk",
-  red: "Off track",
-  purple: "Yet to start",
+  green: "On Track",
+  amber: "Needs Attention",
+  red: "At Risk",
+  purple: "Yet to Start",
+};
+
+// Tooltip copy for a RAG icon that summarizes a single INITIATIVE rolled up
+// from its actions — the detail-view sidebar rows, initiative blocks, and the
+// initiative list inside the dashboard hover tooltip.
+export const RAG_ACTIONS_DESC = {
+  green: "All actions are on track",
+  amber: "One action is delayed",
+  red: "Multiple actions are delayed",
+  purple: "Actions are yet to start",
 };
 export const getRagColor = (level) => RAG_COLORS[level] || RAG_COLORS.green;
 
@@ -131,8 +141,8 @@ export const initiativeRag = (initiative) => {
 
 // Header RAG from its initiatives:
 //   1. any red initiative               → red
-//   2. any amber, ≤ 50% of initiatives   → amber
-//   3. any amber, > 50% of initiatives   → red
+//   2. any amber, < 50% of initiatives   → amber
+//   3. any amber, ≥ 50% of initiatives   → red
 //   4. every initiative purple           → purple
 //   5. otherwise                         → green
 export const headerRag = (initiatives = []) => {
@@ -140,9 +150,32 @@ export const headerRag = (initiatives = []) => {
   const total = rags.length;
   if (rags.some((r) => r === "red")) return "red";
   const amber = rags.filter((r) => r === "amber").length;
-  if (amber > 0) return (amber / total) * 100 > 50 ? "red" : "amber";
+  if (amber > 0) return (amber / total) * 100 >= 50 ? "red" : "amber";
   if (total > 0 && rags.every((r) => r === "purple")) return "purple";
   return "green";
+};
+
+// Tooltip copy for a TOPIC icon. The icon COLOUR comes from headerRag, but the
+// wording is driven by the underlying initiative counts so it names exactly how
+// many are affected:
+//   • every initiative purple  → "Initiatives are yet to start"
+//   • any red initiative       → one / multiple "at risk"
+//   • no red but some amber    → one / multiple "needs attention"
+//   • otherwise                → "All initiatives are on track"
+export const headerRagTooltip = (initiatives = []) => {
+  const rags = initiatives.map((ini) => initiativeRag(ini));
+  const total = rags.length;
+  if (total > 0 && rags.every((r) => r === "purple"))
+    return "Initiatives are yet to start";
+  const red = rags.filter((r) => r === "red").length;
+  const amber = rags.filter((r) => r === "amber").length;
+  if (red > 0)
+    return red === 1 ? "One initiative at risk" : "Multiple initiatives at risk";
+  if (amber > 0)
+    return amber === 1
+      ? "One initiative needs attention"
+      : "Multiple initiatives need attention";
+  return "All initiatives are on track";
 };
 
 // ── FMEA / risk (Failure Mode & Effects Analysis) ────────────────────────────

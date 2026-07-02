@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import RagIcon from "./RagIcon.jsx";
 import { PHASE_COLORS } from "../constants.js";
-import { initiativeRag, RAG_LABEL } from "../utils.js";
+import { initiativeRag } from "../utils.js";
 
 export default function TooltipModal({ item, anchor, containerRect }) {
   if (!item || !anchor || !containerRect) return null;
@@ -82,7 +82,7 @@ export default function TooltipModal({ item, anchor, containerRect }) {
                     key={i}
                     className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
                   >
-                    <RagIcon level={rag} size={22} title={RAG_LABEL[rag]} />
+                    <RagIcon level={rag} size={22} scope="actions" />
                     <span className="flex-1 text-[12px] text-slate-700 leading-snug">
                       {ini.name}
                     </span>

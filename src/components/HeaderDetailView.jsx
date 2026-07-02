@@ -26,9 +26,9 @@ import {
   taskEndDate,
   isOverdue,
   RAG_COLORS,
-  RAG_LABEL,
   initiativeRag,
   headerRag,
+  headerRagTooltip,
   getProgressColor,
 } from "../utils.js";
 import RagIcon from "./RagIcon.jsx";
@@ -239,7 +239,7 @@ function InitiativeBlock({ initiative, expanded, onToggle }) {
         onClick={onToggle}
         className="flex w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:bg-slate-50/70"
       >
-        <RagIcon level={rag} size={32} title={RAG_LABEL[rag]} />
+        <RagIcon level={rag} size={32} scope="actions" />
         <div className="min-w-0 flex-1">
           <div className="font-bold text-slate-900">{initiative.name}</div>
           {outcome ? (
@@ -275,7 +275,7 @@ function InitiativeBlock({ initiative, expanded, onToggle }) {
       style={{ borderLeft: `4px solid ${RAG_COLORS[rag]}` }}
     >
       <div className="flex items-start gap-4 p-4">
-        <RagIcon level={rag} size={32} title={RAG_LABEL[rag]} />
+        <RagIcon level={rag} size={32} scope="actions" />
         <div className="min-w-0 flex-1">
           <div className="text-lg font-bold text-slate-900">{initiative.name}</div>
           {outcome ? <div className="text-sm text-slate-500">{outcome}</div> : null}
@@ -445,7 +445,7 @@ export default function HeaderDetailView({ item, onBack, userName, userEmail }) 
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex min-w-0 items-center gap-2">
-                      <RagIcon level={rag} size={20} title={RAG_LABEL[rag]} />
+                      <RagIcon level={rag} size={20} scope="actions" />
                       <span className="truncate text-sm font-medium text-slate-700">
                         {ini.name}
                       </span>
@@ -485,7 +485,7 @@ export default function HeaderDetailView({ item, onBack, userName, userEmail }) 
                 <RagIcon
                   level={headerLevel}
                   size={34}
-                  title={`${RAG_LABEL[headerLevel]} — initiative health`}
+                  title={headerRagTooltip(initiatives)}
                 />
                 <div className="min-w-0 pl-2">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">

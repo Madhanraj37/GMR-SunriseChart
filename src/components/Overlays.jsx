@@ -9,39 +9,37 @@ import {
   BOTTOM_LABEL,
 } from "../constants.js";
 
-// Per-phase timeline duration shown above each phase header.
-const PHASE_MONTHS = {
-  Establish: "9 Months",
-  Enhance: "5 Months",
-  Optimize: "4 Months",
-};
+// Overall timeline duration shown as a single band above all phase headers.
+const TIMELINE_LABEL = "12 to 18 Months";
 
 export function PhaseHeaders() {
+  // The duration band spans the full width of the three phase headers.
+  const spanX0 = PHASE_BANDS.Establish.x0;
+  const spanX1 = PHASE_BANDS.Optimize.x1;
   return (
     <>
-      {["Establish", "Enhance", "Optimize"].map((phase, i) => {
+      {/* Overall duration — a single band directly above the phase headers */}
+      <div
+        className="absolute flex items-center justify-center font-bold tracking-wide text-[#1A2F5C] select-none"
+        style={{
+          left: spanX0,
+          top: -8,
+          width: spanX1 - spanX0,
+          height: 34,
+          background: "#EFF1F4",
+          fontSize: 15,
+          letterSpacing: "0.02em",
+          zIndex: 12,
+        }}
+      >
+        {TIMELINE_LABEL}
+      </div>
+
+      {["Establish", "Enhance", "Optimize"].map((phase) => {
         const band = PHASE_BANDS[phase];
         const width = band.x1 - band.x0;
         return (
           <React.Fragment key={phase}>
-            {/* Per-phase duration — sits directly above the phase header */}
-            <div
-              className="absolute flex items-center justify-center font-bold tracking-wide text-[#1A2F5C] select-none"
-              style={{
-                left: band.x0,
-                top: -8,
-                width,
-                height: 34,
-                background: "#EFF1F4",
-                fontSize: 15,
-                letterSpacing: "0.02em",
-                borderLeft: i > 0 ? "2px solid #fff" : "none",
-                zIndex: 12,
-              }}
-            >
-              {PHASE_MONTHS[phase]}
-            </div>
-
             {/* Phase header */}
             <div
               className="absolute flex items-center justify-center font-bold tracking-wide text-white select-none"
