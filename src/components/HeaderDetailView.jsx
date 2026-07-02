@@ -239,7 +239,7 @@ function InitiativeBlock({ initiative, expanded, onToggle }) {
         onClick={onToggle}
         className="flex w-full items-center gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:bg-slate-50/70"
       >
-        <RagIcon level={rag} size={32} scope="actions" />
+        <RagIcon level={rag} size={20} scope="actions" />
         <div className="min-w-0 flex-1">
           <div className="font-bold text-slate-900">{initiative.name}</div>
           {outcome ? (
@@ -484,7 +484,7 @@ export default function HeaderDetailView({ item, onBack, userName, userEmail }) 
               <div className="flex items-center gap-x-4">
                 <RagIcon
                   level={headerLevel}
-                  size={34}
+                  size={32}
                   title={headerRagTooltip(initiatives)}
                 />
                 <div className="min-w-0 pl-2">

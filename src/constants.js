@@ -36,18 +36,18 @@ export const CATEGORY_POSITIONS = {
   "Establish::Process::Portfolio Expansion": { x: 265, y: 300 },
   "Establish::Process::Process health": { x: 175, y: 400 },
   // ── Establish · Technology ──
-  "Establish::Technology::Tech Strategy for GCC": { x: 220, y: 520 },
-  "Establish::Technology::Tech in Problem Solving": { x: 440, y: 510 },
-  "Establish::Technology::IT Health": { x: 370, y: 510 },
+  "Establish::Technology::Tech Strategy for GCC": { x: 230, y: 530 },
+  "Establish::Technology::Tech in Problem Solving": { x: 410, y: 520 },
+  "Establish::Technology::IT Health": { x: 370, y: 490 },
 
   // ── Enhance · People ──
   "Enhance::People::Brand campaign": { x: 438, y: 38 },
   "Enhance::People::New Ways of Working": { x: 446, y: 128 },
   "Enhance::People::People Development": { x: 625, y: 62 },
   // ── Enhance · Process ──
-  "Enhance::Process::CoE Transition": { x: 690, y: 215 },
+  "Enhance::Process::CoE Transition": { x: 640, y: 215 },
   "Enhance::Process::Continuous Improvement Becomes a Way of Life": { x: 480, y: 220 },
-  "Enhance::Process::Core Business function Pilot": { x: 530, y: 320 },
+  "Enhance::Process::Core Business function Pilot": { x: 500, y: 320 },
   // ── Enhance · Technology ──
   "Enhance::Technology::Automation strategy": { x: 750, y: 430 },
   "Enhance::Technology::S/4 HANA": { x: 600, y: 440},

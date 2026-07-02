@@ -19,7 +19,7 @@ export default function RagLegend() {
       </span>
       {LEGEND.map((it) => (
         <span key={it.level} className="inline-flex items-center gap-2" title={it.desc}>
-          <RagIcon level={it.level} size={22} title={RAG_LABEL[it.level]} />
+          <RagIcon level={it.level} size={15} title={RAG_LABEL[it.level]} />
           <span className="text-xs font-semibold text-slate-700">{RAG_LABEL[it.level]}</span>
           <span className="hidden text-[11px] text-slate-400 lg:inline">· {it.desc}</span>
         </span>

@@ -82,7 +82,7 @@ export default function TooltipModal({ item, anchor, containerRect }) {
                     key={i}
                     className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors"
                   >
-                    <RagIcon level={rag} size={22} scope="actions" />
+                    <RagIcon level={rag} size={15} scope="actions" />
                     <span className="flex-1 text-[12px] text-slate-700 leading-snug">
                       {ini.name}
                     </span>

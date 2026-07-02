@@ -45,12 +45,18 @@ export default function CategoryCard({
       onMouseLeave={onLeave}
       whileHover={{ scale: 1.06 }}
     >
-      {/* RAG dot to the left of the title */}
+      {/* RAG dot to the left of the title, vertically centered on the FIRST
+          line. The wrapper's height matches the first line box (fontSize 14 ×
+          leading-tight 1.25 = 17.5px) so the dot centers on line 1 even when
+          the title wraps. items-start on the row keeps it pinned to line 1. */}
       <div className="flex items-start gap-1.5">
-        <span className="mt-[3px]">
+        <span
+          className="flex shrink-0 items-center"
+          style={{ height: 17.5, fontSize: 14 }}
+        >
           <RagIcon
             level={rag}
-            size={13}
+            size={17}
             title={headerRagTooltip(item.initiatives)}
           />
         </span>
