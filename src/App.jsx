@@ -4,7 +4,7 @@ import { useMsal } from "@azure/msal-react";
 import DashboardCanvas from "./components/DashboardCanvas.jsx";
 import { groupData, attachFmeaToTree } from "./utils.js";
 import { getFileLastModified, downloadFileBuffer } from "./graphExcel.js";
-import { isAdminEmail, EXCEL_FILE_URL, loginRequest } from "./authConfig.js";
+import { EXCEL_FILE_URL, loginRequest } from "./authConfig.js";
 
 const HEADER_ALIASES = {
   phase: ["phase", "stage", "maturityphase", "maturitystage"],
@@ -597,7 +597,6 @@ export default function App() {
     accounts[0];
   const userEmail = account?.username || "";
   const userName = account?.name || "";
-  const isAdmin = isAdminEmail(userEmail);
 
   const [data, setData] = useState({});
   const [riskProfile, setRiskProfile] = useState([]);
@@ -693,7 +692,6 @@ export default function App() {
       riskProfile={riskProfile}
       fileName="SharePoint Excel"
       sourceUrl={EXCEL_FILE_URL}
-      isAdmin={isAdmin}
       userEmail={userEmail}
       userName={userName}
       accounts={accounts}

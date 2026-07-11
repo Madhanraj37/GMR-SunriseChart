@@ -34,7 +34,6 @@ const Avatar = ({ name, email, size = 32 }) => (
 export default function AccountMenu({
   userName,
   userEmail,
-  isAdmin = false,
   accounts = [],
   activeUsername,
   onSignOut,
@@ -103,15 +102,6 @@ export default function AccountMenu({
                 <div className="truncate text-[12px] text-slate-500">
                   {userEmail}
                 </div>
-                <span
-                  className={`mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                    isAdmin
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-slate-100 text-slate-500"
-                  }`}
-                >
-                  {isAdmin ? "Editor" : "View only"}
-                </span>
               </div>
             </div>
 

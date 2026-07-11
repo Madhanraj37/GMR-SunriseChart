@@ -20,7 +20,6 @@ export default function DashboardCanvas({
   riskProfile = [],
   fileName,
   sourceUrl,
-  isAdmin = false,
   userEmail,
   userName,
   accounts = [],
@@ -36,15 +35,15 @@ export default function DashboardCanvas({
 }) {
   const [hover, setHover] = useState(null);
   const [anchor, setAnchor] = useState(null);
-  const [localTree, setLocalTree] = useState(tree);
   const [selected, setSelected] = useState(null);
   const [showRisk, setShowRisk] = useState(false);
   const [availableWidth, setAvailableWidth] = useState(CANVAS_W);
   const [availableHeight, setAvailableHeight] = useState(CANVAS_H);
   const canvasAreaRef = useRef(null);
   const containerRef = useRef(null);
-  useEffect(() => setLocalTree(tree), [tree]);
-  const items = useMemo(() => flattenForRender(localTree), [localTree]);
+  // The dashboard is strictly read-only: it renders the SharePoint workbook as
+  // fetched and never mutates it, so it renders directly from the `tree` prop.
+  const items = useMemo(() => flattenForRender(tree), [tree]);
 
   const currentSelected = selected
     ? items.find((i) => i.key === selected)
@@ -53,24 +52,6 @@ export default function DashboardCanvas({
   const onCategoryClick = (item) => {
     if (item.locked) return;
     setSelected(item.key);
-  };
-
-  const toggleTaskStatus = (phase, dimension, header, initiative, taskIndex) => {
-    if (!isAdmin) return; // view-only users cannot change task status
-    setLocalTree((prev) => {
-      try {
-        const next = JSON.parse(JSON.stringify(prev || {}));
-        const headerNode = next[phase]?.[dimension]?.[header];
-        const tasks = headerNode?.initiatives?.[initiative];
-        if (!tasks) return prev;
-        const t = tasks[taskIndex];
-        if (!t) return prev;
-        t.status = t.status === "done" ? "todo" : "done";
-        return next;
-      } catch (e) {
-        return prev;
-      }
-    });
   };
 
   // ╔══════════════════════════════════════════════════════════════════════╗
@@ -163,19 +144,9 @@ export default function DashboardCanvas({
     return (
       <HeaderDetailView
         item={currentSelected}
-        canEdit={isAdmin}
         userName={userName}
         userEmail={userEmail}
         onBack={() => setSelected(null)}
-        onToggle={(initiativeName, idx) =>
-          toggleTaskStatus(
-            currentSelected.phase,
-            currentSelected.dimension,
-            currentSelected.header,
-            initiativeName,
-            idx
-          )
-        }
       />
     );
   }
@@ -239,7 +210,6 @@ export default function DashboardCanvas({
           <AccountMenu
             userName={userName}
             userEmail={userEmail}
-            isAdmin={isAdmin}
             accounts={accounts}
             activeUsername={activeUsername}
             onSignOut={onSignOut}

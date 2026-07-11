@@ -13,7 +13,6 @@ import {
   Clock,
   Hourglass,
   ListChecks,
-  MoreVertical,
   Target,
   TrendingUp,
   Users,
@@ -233,14 +232,6 @@ function ActionRow({ task }) {
             </div>
           ) : null}
         </div>
-
-        <button
-          type="button"
-          className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-          aria-label="More"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </button>
       </div>
     </div>
   );

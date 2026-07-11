@@ -20,13 +20,6 @@ export const TENANT_ID = import.meta.env.VITE_TENANT_ID;
 // Site/Drive/Item IDs needed.
 export const EXCEL_FILE_URL = import.meta.env.VITE_EXCEL_FILE_URL;
 
-// Comma-separated list of emails allowed to toggle task completion (everyone
-// else is read-only). e.g. VITE_ADMIN_EMAILS="a@x.com,b@x.com"
-export const ADMIN_EMAILS = String(import.meta.env.VITE_ADMIN_EMAILS || "")
-  .split(",")
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Below this line you normally don't need to change anything.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,6 +42,3 @@ export const msalConfig = {
 export const loginRequest = {
   scopes: ["User.Read", "Files.Read.All", "Sites.Read.All"],
 };
-
-export const isAdminEmail = (email) =>
-  !!email && ADMIN_EMAILS.includes(String(email).toLowerCase());

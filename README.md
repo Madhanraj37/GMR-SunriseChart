@@ -13,7 +13,8 @@ truth.
 
 | Guide | Purpose |
 |-------|---------|
-| **[SETUP_AND_RUN.md](SETUP_AND_RUN.md)** | Register the Entra ID app, get the config values, run locally. **Start here.** |
+| **[PROJECT_HANDOVER.md](PROJECT_HANDOVER.md)** | Complete handover reference — architecture, user flow, RAG(P) logic, security, operations. **Read first for the full picture.** |
+| **[SETUP_AND_RUN.md](SETUP_AND_RUN.md)** | Register the Entra ID app, get the config values, run locally. |
 | **[DEPLOY_TO_AZURE.md](DEPLOY_TO_AZURE.md)** | Build and host on Azure Static Web Apps. |
 
 ## Quick start (local)
