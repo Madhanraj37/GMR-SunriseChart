@@ -8,14 +8,14 @@
 | **Version tested** | 1.0.0 |
 | **Application type** | Frontend-only single-page application (React SPA) |
 | **Hosting (as tested)** | Azure Static Web Apps (static files + CDN) |
-| **Live URL tested** | _<fill in the deployed Azure URL>_ |
+| **Live URL tested** | https://victorious-desert-04521ca10.7.azurestaticapps.net/ |
 | **Assessment type** | Grey-box — static code/config review + dependency audit + automated dynamic scan (DAST) |
 | **DAST tooling** | Snyk API & Web (formerly Probely) |
 | **Report classification** | Confidential |
-| **Prepared by** | _<your name / company>_ |
-| **Prepared for** | _<customer name>_ |
+| **Prepared by** | Madhanraj & Naresh |
+| **Prepared for** | GMR SSC |
 | **Assessment dates** | 11–13 July 2026 |
-| **Report version / date** | 1.0 — _<date>_ |
+| **Report version / date** | 1.0 — 13 July 2026 |
 
 ---
 
@@ -74,7 +74,7 @@ trade-off, and each is accompanied by a recommendation.
 
 | Target | Detail |
 |--------|--------|
-| Deployed web application | `<LIVE URL>` (Azure Static Web Apps) |
+| Deployed web application | https://victorious-desert-04521ca10.7.azurestaticapps.net/ (Azure Static Web Apps) |
 | Application source code | Complete React/Vite SPA source (`src/`, 18 files) |
 | Hosting / header configuration | `public/staticwebapp.config.json` |
 | Authentication & session handling | Microsoft Entra ID + MSAL (PKCE) |
