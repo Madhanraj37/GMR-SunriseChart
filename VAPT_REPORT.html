@@ -24,26 +24,14 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --ground: #0f131b;
-      --surface: #151b25;
-      --surface-2: #1b222e;
-      --ink: #e6eaf2;
-      --ink-2: #b3bccb;
-      --ink-3: #808b9d;
-      --line: #29313d;
-      --line-strong: #3a4453;
-      --accent: #6aa5d9;
-      --accent-soft: #17263a;
-      --sev-critical: #f0736a;
-      --sev-high: #ec9166;
-      --sev-medium: #dcae5f;
-      --sev-low: #6aa5d9;
-      --sev-info: #94a3b8;
-      --ok: #5fbb84;
-      --ok-soft: #142a1f;
+      --ground: #0f131b; --surface: #151b25; --surface-2: #1b222e;
+      --ink: #e6eaf2; --ink-2: #b3bccb; --ink-3: #808b9d;
+      --line: #29313d; --line-strong: #3a4453;
+      --accent: #6aa5d9; --accent-soft: #17263a;
+      --sev-critical: #f0736a; --sev-high: #ec9166; --sev-medium: #dcae5f;
+      --sev-low: #6aa5d9; --sev-info: #94a3b8; --ok: #5fbb84; --ok-soft: #142a1f;
     }
   }
-
   :root[data-theme="light"] {
     --ground: #fcfcfd; --surface: #ffffff; --surface-2: #f5f6f9;
     --ink: #171b26; --ink-2: #3f4859; --ink-3: #6b7383;
@@ -64,232 +52,68 @@
   * { box-sizing: border-box; }
 
   .page {
-    background: var(--ground);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.6;
+    background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-    padding: 48px 24px 96px;
-    display: flex;
-    justify-content: center;
+    padding: 48px 24px 96px; display: flex; justify-content: center;
   }
+  .doc { width: 100%; max-width: 820px; display: flex; flex-direction: column; gap: 40px; }
 
-  .doc {
-    width: 100%;
-    max-width: 820px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-  }
-
-  /* ── Cover ─────────────────────────────────────────── */
   .cover {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-top: 4px solid var(--accent);
-    border-radius: 4px;
-    padding: 48px 44px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-top: 4px solid var(--accent); border-radius: 4px; padding: 48px 44px;
   }
   .classification {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--sev-high);
-    border: 1px solid var(--sev-high);
-    border-radius: 3px;
-    padding: 3px 9px;
-    margin-bottom: 28px;
+    display: inline-block; font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--sev-high);
+    border: 1px solid var(--sev-high); border-radius: 3px; padding: 3px 9px; margin-bottom: 28px;
   }
-  .cover-eyebrow {
-    font-size: 12px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-bottom: 14px;
-  }
-  .cover h1 {
-    font-family: var(--serif);
-    font-weight: 700;
-    font-size: 40px;
-    line-height: 1.12;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
-    margin: 0 0 8px;
-    color: var(--ink);
-  }
-  .cover-sub {
-    font-family: var(--serif);
-    font-size: 20px;
-    font-style: italic;
-    color: var(--accent);
-    margin: 0 0 32px;
-  }
+  .cover-eyebrow { font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  .cover h1 { font-family: var(--serif); font-weight: 700; font-size: 40px; line-height: 1.12; letter-spacing: -0.01em; text-wrap: balance; margin: 0 0 8px; color: var(--ink); }
+  .cover-sub { font-family: var(--serif); font-size: 20px; font-style: italic; color: var(--accent); margin: 0 0 32px; }
 
-  .meta {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-  }
+  .meta { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   .meta tr { border-top: 1px solid var(--line); }
   .meta tr:last-child { border-bottom: 1px solid var(--line); }
-  .meta th {
-    text-align: left;
-    font-weight: 600;
-    color: var(--ink-3);
-    padding: 9px 16px 9px 0;
-    white-space: nowrap;
-    vertical-align: top;
-    width: 190px;
-  }
+  .meta th { text-align: left; font-weight: 600; color: var(--ink-3); padding: 9px 16px 9px 0; white-space: nowrap; vertical-align: top; width: 190px; }
   .meta td { padding: 9px 0; color: var(--ink); vertical-align: top; }
   .fill { color: var(--accent); font-style: italic; }
 
-  /* ── Sections ──────────────────────────────────────── */
   .section { display: flex; flex-direction: column; gap: 18px; }
   .sec-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
-  .sec-num {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.04em;
-  }
-  .sec-title {
-    font-family: var(--serif);
-    font-weight: 700;
-    font-size: 23px;
-    letter-spacing: -0.01em;
-    margin: 0;
-    color: var(--ink);
-  }
+  .sec-num { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0.04em; }
+  .sec-title { font-family: var(--serif); font-weight: 700; font-size: 23px; letter-spacing: -0.01em; margin: 0; color: var(--ink); }
   .section p { margin: 0; color: var(--ink-2); }
   .section p + p { margin-top: 4px; }
-  .section h3 {
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 700;
-    margin: 8px 0 0;
-    color: var(--ink);
-  }
+  .section h3 { font-family: var(--sans); font-size: 15px; font-weight: 700; margin: 8px 0 0; color: var(--ink); }
   strong { color: var(--ink); font-weight: 650; }
-  code {
-    font-family: var(--mono);
-    font-size: 0.86em;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: 1px 5px;
-    color: var(--ink);
-  }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; color: var(--ink); }
 
-  .verdict {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--ok-soft);
-    border: 1px solid var(--ok);
-    border-left: 4px solid var(--ok);
-    border-radius: 4px;
-    padding: 16px 20px;
-  }
+  .verdict { display: flex; align-items: center; gap: 14px; background: var(--ok-soft); border: 1px solid var(--ok); border-left: 4px solid var(--ok); border-radius: 4px; padding: 16px 20px; }
   .verdict .lbl { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
   .verdict .val { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--ok); line-height: 1; }
 
-  /* ── Severity count cards ──────────────────────────── */
-  .counts {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-  }
-  .count {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--c);
-    border-radius: 4px;
-    padding: 14px 12px;
-    text-align: center;
-  }
-  .count .n {
-    font-family: var(--serif);
-    font-size: 30px;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--c);
-    font-variant-numeric: tabular-nums;
-  }
-  .count .k {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    margin-top: 7px;
-  }
+  .counts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .count { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 4px; padding: 14px 12px; text-align: center; }
+  .count .n { font-family: var(--serif); font-size: 30px; font-weight: 700; line-height: 1; color: var(--c); font-variant-numeric: tabular-nums; }
+  .count .k { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-top: 7px; }
 
-  /* ── Tables ────────────────────────────────────────── */
   .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
-  table.data {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-    background: var(--surface);
-  }
-  table.data th {
-    text-align: left;
-    font-size: 11.5px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-    background: var(--surface-2);
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line-strong);
-    white-space: nowrap;
-  }
-  table.data td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line);
-    color: var(--ink-2);
-    vertical-align: top;
-  }
+  table.data { width: 100%; border-collapse: collapse; font-size: 13.5px; background: var(--surface); }
+  table.data th { text-align: left; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); background: var(--surface-2); padding: 10px 14px; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
+  table.data td { padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
   table.data tr:last-child td { border-bottom: none; }
   table.data td.num, table.data th.num { text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
   table.data .idc { font-family: var(--mono); font-weight: 600; color: var(--ink); white-space: nowrap; }
 
-  /* ── Severity pills ────────────────────────────────── */
-  .sev {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 2px 9px;
-    border-radius: 999px;
-    color: #fff;
-    white-space: nowrap;
-  }
+  .sev { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; color: #fff; white-space: nowrap; }
   .sev-critical { background: var(--sev-critical); }
   .sev-high { background: var(--sev-high); }
   .sev-medium { background: var(--sev-medium); }
   .sev-low { background: var(--sev-low); }
   .sev-info { background: var(--sev-info); }
-  .sev-ok { background: var(--ok); }
 
-  /* ── Finding cards ─────────────────────────────────── */
-  .finding {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--stripe);
-    border-radius: 4px;
-    padding: 22px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .f-crit { --stripe: var(--sev-critical); }
-  .f-high { --stripe: var(--sev-high); }
-  .f-med  { --stripe: var(--sev-medium); }
+  .finding { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--stripe); border-radius: 4px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
   .f-low  { --stripe: var(--sev-low); }
   .f-info { --stripe: var(--sev-info); }
   .f-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
@@ -308,27 +132,14 @@
   .f-block ul { margin: 2px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14px; }
   .f-block li { margin: 2px 0; }
 
-  pre {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 12px 14px;
-    overflow-x: auto;
-    margin: 0;
-    color: var(--ink);
-    line-height: 1.5;
-  }
+  pre { font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; overflow-x: auto; margin: 0; color: var(--ink); line-height: 1.5; }
 
-  /* ── Positives ─────────────────────────────────────── */
   .pos-item { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--line); }
   .pos-item:last-child { border-bottom: none; }
   .pos-check { color: var(--ok); font-weight: 800; font-size: 15px; line-height: 1.5; flex-shrink: 0; }
   .pos-item .pt { color: var(--ink); font-weight: 600; }
   .pos-item .pd { color: var(--ink-3); font-size: 13px; }
 
-  /* ── Architecture flow ─────────────────────────────── */
   .flow { display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 22px; }
   .flow-node { border: 1px solid var(--line-strong); border-radius: 4px; padding: 12px 16px; background: var(--surface-2); }
   .flow-node .t { font-weight: 700; color: var(--ink); font-size: 14px; }
@@ -338,19 +149,10 @@
   .flow-arrow { text-align: center; color: var(--accent); font-size: 13px; font-family: var(--mono); }
   .flow-note { font-size: 12.5px; color: var(--ink-3); font-style: italic; }
 
-  .callout {
-    background: var(--accent-soft);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--accent);
-    border-radius: 4px;
-    padding: 14px 18px;
-    font-size: 13.5px;
-    color: var(--ink-2);
-  }
+  .callout { background: var(--accent-soft); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 4px; padding: 14px 18px; font-size: 13.5px; color: var(--ink-2); }
   .callout strong { color: var(--accent); }
 
   .footer-note { font-size: 12px; color: var(--ink-3); font-style: italic; border-top: 1px solid var(--line); padding-top: 18px; line-height: 1.55; }
-
   ol.actions { margin: 0; padding-left: 22px; color: var(--ink-2); }
   ol.actions li { margin: 5px 0; }
 
@@ -361,7 +163,6 @@
     .meta th { width: auto; }
   }
 
-  /* ── Print / PDF ───────────────────────────────────── */
   @media print {
     :root {
       --ground: #fff; --surface: #fff; --surface-2: #f4f5f7;
@@ -373,7 +174,6 @@
     .cover { border: none; border-top: 4px solid var(--accent); padding: 24px 0 32px; break-after: page; }
     .section { break-inside: avoid-page; }
     .finding, .count, .verdict, .flow, .tbl-wrap, .callout { break-inside: avoid; }
-    #findings-detail .finding + .finding { break-before: auto; }
     a { color: inherit; text-decoration: none; }
     @page { margin: 16mm 16mm 18mm; }
   }
@@ -396,10 +196,11 @@
           <tr><th>Application type</th><td>Frontend-only single-page application (React SPA)</td></tr>
           <tr><th>Hosting (as tested)</th><td>Azure Static Web Apps (static files + CDN)</td></tr>
           <tr><th>Live URL tested</th><td class="fill">&lt;fill in the deployed Azure URL&gt;</td></tr>
-          <tr><th>Assessment type</th><td>Grey-box — static code &amp; config review, dependency audit, and automated dynamic scanning</td></tr>
+          <tr><th>Assessment type</th><td>Grey-box — static code &amp; config review, dependency audit, and automated dynamic scan (DAST)</td></tr>
+          <tr><th>DAST tooling</th><td>Snyk API &amp; Web (formerly Probely)</td></tr>
           <tr><th>Prepared by</th><td class="fill">&lt;your name / company&gt;</td></tr>
           <tr><th>Prepared for</th><td class="fill">&lt;customer name&gt;</td></tr>
-          <tr><th>Assessment date</th><td class="fill">&lt;start&gt; – &lt;end&gt;</td></tr>
+          <tr><th>Assessment dates</th><td>11–13 July 2026</td></tr>
           <tr><th>Report version</th><td>1.0 — <span class="fill">&lt;date&gt;</span></td></tr>
         </tbody>
       </table>
@@ -409,18 +210,16 @@
     <section class="section">
       <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Executive summary</h2></div>
 
-      <p>A security assessment was performed on the GMR Sunrise Transformation Maturity Dashboard prior to its deployment into the customer's Microsoft&nbsp;365 / Azure environment. The assessment combined a <strong>manual review of the complete application source code and configuration</strong>, a <strong>software-composition (dependency) audit</strong>, and <strong>automated dynamic scanning</strong> of the deployed application using a commercial VAPT platform.</p>
+      <p>A security assessment was performed on the GMR Sunrise Transformation Maturity Dashboard prior to its deployment into the customer's Microsoft&nbsp;365 / Azure environment. The assessment combined a <strong>manual review of the complete application source code and configuration</strong>, a <strong>software-composition (dependency) audit</strong>, and an <strong>automated dynamic scan (DAST)</strong> of the deployed application using the commercial platform <strong>Snyk API &amp; Web</strong>.</p>
 
-      <p>The application is a <strong>frontend-only single-page application</strong> with <strong>no backend server, no application database, and no server-side code</strong>. All logic executes in the end-user's browser. It is <strong>strictly read-only</strong> — it renders a single Excel workbook from SharePoint and provides <strong>no facility to edit or write data</strong> of any kind. It authenticates users against <strong>Microsoft Entra ID</strong> using the <strong>OAuth&nbsp;2.0 Authorization Code flow with PKCE</strong>, and reads the workbook through the <strong>Microsoft Graph API</strong> using <strong>delegated, read-only</strong> permissions. Because there is no server-side attack surface and no write path, entire vulnerability classes — SQL injection, server-side request forgery, server RCE, insecure direct object references, data tampering — are <strong>not applicable</strong>.</p>
-
-      <div class="callout"><strong>Scope of this rating.</strong> This assessment reflects the application as deployed on <strong>Azure Static Web Apps</strong>. If it is later migrated to a different hosting platform, the static/code findings remain valid, but the dynamic checks (§8) should be re-run against the new URL and the platform-portability item <strong>F-05</strong> must be actioned.</div>
+      <p>The application is a <strong>frontend-only single-page application</strong> with <strong>no backend server, no application database, and no server-side code</strong>. All logic executes in the end-user's browser. It is <strong>strictly read-only</strong> — it renders a single Excel workbook from SharePoint and provides <strong>no facility to edit or write data</strong>. It authenticates users against <strong>Microsoft Entra ID</strong> using the <strong>OAuth&nbsp;2.0 Authorization Code flow with PKCE</strong>, and reads the workbook through the <strong>Microsoft Graph API</strong> using <strong>delegated, read-only</strong> permissions. Because there is no server-side attack surface and no write path, entire vulnerability classes — SQL injection, SSRF, server RCE, insecure direct object references, data tampering — are <strong>not applicable</strong>.</p>
 
       <div class="verdict">
         <div>
           <div class="lbl">Overall risk rating</div>
           <div class="val">LOW</div>
         </div>
-        <p style="font-size:13.5px;">No critical, high, or medium-severity vulnerabilities were identified. The application demonstrates a strong security posture. A small number of low-severity and informational observations were recorded, each a well-understood trade-off for a single-page application, and each with a recommendation.</p>
+        <p style="font-size:13.5px;">No critical, high, or medium-severity vulnerabilities were identified by source review, dependency audit (0 known vulnerabilities), or the automated dynamic scan (no injection / XSS / sensitive-data / open-redirect findings). Three low-severity and three informational observations were recorded, each a well-understood trade-off with a recommendation.</p>
       </div>
 
       <h3>Findings at a glance</h3>
@@ -428,15 +227,16 @@
         <div class="count" style="--c:var(--sev-critical)"><div class="n">0</div><div class="k">Critical</div></div>
         <div class="count" style="--c:var(--sev-high)"><div class="n">0</div><div class="k">High</div></div>
         <div class="count" style="--c:var(--sev-medium)"><div class="n">0</div><div class="k">Medium</div></div>
-        <div class="count" style="--c:var(--sev-low)"><div class="n">2</div><div class="k">Low</div></div>
+        <div class="count" style="--c:var(--sev-low)"><div class="n">3</div><div class="k">Low</div></div>
         <div class="count" style="--c:var(--sev-info)"><div class="n">3</div><div class="k">Info</div></div>
       </div>
+
+      <div class="callout"><strong>Scope of this rating.</strong> This assessment reflects the application as deployed on <strong>Azure Static Web Apps</strong>. If it is later migrated to a different hosting platform, the static/code findings remain valid, but the dynamic checks (§8) should be re-run against the new URL and the platform-portability item <strong>F-06</strong> must be actioned.</div>
     </section>
 
     <!-- ══ 2. SCOPE ══ -->
     <section class="section">
       <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Scope</h2></div>
-
       <h3>In scope</h3>
       <div class="tbl-wrap">
         <table class="data">
@@ -444,17 +244,15 @@
           <tbody>
             <tr><td>Deployed web application</td><td>&lt;live URL&gt; (Azure Static Web Apps)</td></tr>
             <tr><td>Application source code</td><td>Complete React/Vite SPA source (18 files)</td></tr>
-            <tr><td>Hosting / header configuration</td><td><code>staticwebapp.config.json</code></td></tr>
+            <tr><td>Hosting / header configuration</td><td><code>public/staticwebapp.config.json</code></td></tr>
             <tr><td>Authentication &amp; session handling</td><td>Microsoft Entra ID + MSAL (PKCE)</td></tr>
-            <tr><td>Authorization model</td><td>Viewer vs Editor behaviour</td></tr>
             <tr><td>Client → Graph data flow</td><td>Token handling, scope usage, data rendering</td></tr>
             <tr><td>Dependencies (supply chain)</td><td>All npm packages shipped in the build</td></tr>
           </tbody>
         </table>
       </div>
-
       <h3>Out of scope</h3>
-      <p>Third-party services operated by Microsoft and Google were <strong>not</strong> tested — they are outside the customer's authority to authorize and are covered by their providers' own assurance programmes: Microsoft Entra ID (<code>login.microsoftonline.com</code>), Microsoft Graph (<code>graph.microsoft.com</code>), SharePoint Online (<code>*.sharepoint.com</code>), the Azure Static Web Apps platform, and Google Fonts. The assessment covered <strong>how the application uses</strong> these services, not the services themselves.</p>
+      <p>Third-party services operated by Microsoft and Google were <strong>not</strong> tested — Microsoft Entra ID, Microsoft Graph, SharePoint Online, the Azure Static Web Apps platform (except its externally-observable TLS/header configuration), and Google Fonts. The assessment covered <strong>how the application uses</strong> these services, not the services themselves.</p>
     </section>
 
     <!-- ══ 3. METHODOLOGY ══ -->
@@ -466,16 +264,13 @@
           <thead><tr><th>Technique</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td>SAST</td><td>Manual review of all source code and build/hosting configuration.</td></tr>
-            <tr><td>SCA</td><td>Dependency vulnerability audit against the full dependency tree.</td></tr>
-            <tr><td>DAST</td><td>Automated scanning of the deployed app with a commercial VAPT platform (crawl, active checks, TLS/header inspection).</td></tr>
-            <tr><td>Manual verification</td><td>Authentication flow, authorization boundaries, client-side storage, header enforcement.</td></tr>
+            <tr><td>SCA</td><td>Dependency vulnerability audit (<code>npm audit</code>) against the full dependency tree.</td></tr>
+            <tr><td>DAST</td><td>Automated scanning of the deployed app with <strong>Snyk API &amp; Web</strong> (crawl + active checks, TLS/header inspection).</td></tr>
+            <tr><td>Manual verification</td><td>Authentication flow, client-side storage, clickjacking, header enforcement.</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="callout"><strong>Methodology transparency.</strong> Findings marked <code>[Static]</code> were confirmed by source/configuration review. Items marked <code>[Dynamic]</code> are validated by the automated VAPT platform against the live URL — see §8 for the checklist and where to record results.</div>
-
-      <h3>Risk rating</h3>
-      <p>Severity is rated using <strong>CVSS v3.1</strong>: Critical 9.0–10.0, High 7.0–8.9, Medium 4.0–6.9, Low 0.1–3.9, Informational 0.0 (no direct exploitability).</p>
+      <p style="font-size:13.5px;">Severity is rated using <strong>CVSS v3.x</strong>: Critical 9.0–10.0, High 7.0–8.9, Medium 4.0–6.9, Low 0.1–3.9, Informational 0.0. Low-severity scores below are taken from the Snyk platform where it reported them.</p>
     </section>
 
     <!-- ══ 4. ARCHITECTURE ══ -->
@@ -487,9 +282,9 @@
         <div class="flow-node oos"><span class="badge">Out of scope</span><span class="t">Microsoft Entra ID</span><br><span class="d">Sign-in &amp; token issuance (Azure AD).</span></div>
         <div class="flow-arrow">▼ &nbsp; 2. Bearer access token &nbsp; ▲ &nbsp; Excel workbook (.xlsx)</div>
         <div class="flow-node oos"><span class="badge">Out of scope</span><span class="t">Microsoft Graph → SharePoint Online</span><br><span class="d">Delegated, read-only access to one workbook.</span></div>
-        <div class="flow-note">No vendor-controlled server · no database · no third-party analytics · tokens held in sessionStorage (cleared on tab close) · read-only.</div>
+        <div class="flow-note">No vendor-controlled server · no database · no third-party analytics · tokens in sessionStorage (cleared on tab close) · read-only.</div>
       </div>
-      <p><strong>Security-relevant properties:</strong> no vendor server (no server-side surface); all logic client-side (surface = XSS, session/token handling, CSP, dependencies, OAuth config); read-only (no write path to SharePoint); client/tenant IDs are public identifiers, not secrets — no client secret, password, or API key exists in the application.</p>
+      <p><strong>Security-relevant properties:</strong> no vendor server (no server-side surface); all logic client-side (surface = XSS, session/token handling, CSP, dependencies, OAuth config); strictly read-only (no write path, no in-app editing); client/tenant IDs are public identifiers, not secrets — no client secret, password, or API key exists in the application.</p>
     </section>
 
     <!-- ══ 5. FINDINGS SUMMARY ══ -->
@@ -499,11 +294,12 @@
         <table class="data">
           <thead><tr><th>ID</th><th>Finding</th><th class="num">Severity</th><th class="num">CVSS</th><th>Status</th></tr></thead>
           <tbody>
-            <tr><td class="idc">F-01</td><td>Content-Security-Policy permits <code>'unsafe-inline'</code> for styles</td><td class="num"><span class="sev sev-low">Low</span></td><td class="num">3.1</td><td>Open (accepted)</td></tr>
+            <tr><td class="idc">F-01</td><td>Content-Security-Policy permits <code>'unsafe-inline'</code> for styles</td><td class="num"><span class="sev sev-low">Low</span></td><td class="num">3.7</td><td>Open (accepted)</td></tr>
             <tr><td class="idc">F-02</td><td>Access tokens accessible to same-origin JavaScript (<code>sessionStorage</code>)</td><td class="num"><span class="sev sev-low">Low</span></td><td class="num">3.1</td><td>Open (mitigated)</td></tr>
-            <tr><td class="idc">F-03</td><td>Public configuration values embedded in the JS bundle</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>By design</td></tr>
-            <tr><td class="idc">F-04</td><td>Third-party resource load (Google Fonts)</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>Open (optional)</td></tr>
-            <tr><td class="idc">F-05</td><td>Security headers/CSP are hosting-platform-specific (Azure SWA)</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>Open (portability)</td></tr>
+            <tr><td class="idc">F-03</td><td>Weak TLS cipher suites offered by the hosting platform</td><td class="num"><span class="sev sev-low">Low</span></td><td class="num">4.2</td><td>Open (platform-managed)</td></tr>
+            <tr><td class="idc">F-04</td><td>Public configuration values embedded in the JS bundle</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>By design</td></tr>
+            <tr><td class="idc">F-05</td><td>Third-party resource load (Google Fonts)</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>Open (optional)</td></tr>
+            <tr><td class="idc">F-06</td><td>Security headers/CSP are hosting-platform-specific (Azure SWA)</td><td class="num"><span class="sev sev-info">Info</span></td><td class="num">0.0</td><td>Open (portability)</td></tr>
           </tbody>
         </table>
       </div>
@@ -515,15 +311,16 @@
 
       <!-- F-01 -->
       <article class="finding f-low">
-        <div class="f-head"><span class="f-id">F-01</span><h3 class="f-title">CSP permits <code>'unsafe-inline'</code> for styles</h3><span class="sev sev-low">Low</span><span class="f-tag">Static</span></div>
+        <div class="f-head"><span class="f-id">F-01</span><h3 class="f-title">CSP permits <code>'unsafe-inline'</code> for styles</h3><span class="sev sev-low">Low</span><span class="f-tag">Static · confirmed by DAST</span></div>
         <dl class="kv">
-          <dt>CVSS v3.1</dt><dd>3.1 — <code>AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N</code></dd>
+          <dt>CVSS v3.0</dt><dd>3.7 — <code>AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N</code></dd>
           <dt>OWASP</dt><dd>A05:2021 – Security Misconfiguration</dd>
           <dt>Component</dt><dd><code>public/staticwebapp.config.json</code> → Content-Security-Policy</dd>
+          <dt>Source</dt><dd>Vendor source review; confirmed by Snyk API &amp; Web DAST (13 Jul 2026)</dd>
         </dl>
-        <div class="f-block"><span class="h">Description</span><p>The CSP is strict for scripts (<code>script-src 'self'</code>, <code>object-src 'none'</code>, <code>frame-ancestors 'none'</code>), but <code>style-src</code> includes <code>'unsafe-inline'</code> to support the styling approach (Tailwind utility classes, Framer Motion inline styles):</p><pre>style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;</pre></div>
-        <div class="f-block"><span class="h">Impact</span><p><code>'unsafe-inline'</code> for styles permits injected inline CSS, theoretically abusable for limited UI-redress or CSS-based inference. <strong>Script injection remains fully blocked</strong>, so practical risk is low — an attacker cannot execute JavaScript via this weakness.</p></div>
-        <div class="f-block"><span class="h">Recommendation</span><p>Accept as a documented trade-off, or (if policy prohibits <code>'unsafe-inline'</code>) migrate to nonce- or hash-based styles. No functional change is required for safe operation.</p></div>
+        <div class="f-block"><span class="h">Description</span><p>The CSP is strict for scripts (<code>script-src 'self'</code>, <code>object-src 'none'</code>, <code>frame-ancestors 'none'</code>), but <code>style-src</code> includes <code>'unsafe-inline'</code>:</p><pre>style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;</pre><p>The Snyk scan independently flagged the same single issue — <em>"unsafe 'unsafe-inline' in the style-src directive"</em> — confirming this is the only CSP weakness present.</p></div>
+        <div class="f-block"><span class="h">Impact</span><p><code>'unsafe-inline'</code> for styles permits injected inline CSS, abusable only for limited UI-redress. <strong>Script injection remains fully blocked</strong> (<code>script-src 'self'</code>), so JavaScript/XSS execution is not possible via this weakness — practical risk is low.</p></div>
+        <div class="f-block"><span class="h">Recommendation</span><p><code>'unsafe-inline'</code> for styles is <strong>required</strong> by the stack — React inline styles (<code>style={{…}}</code>) and Framer Motion animations set inline styles at runtime and cannot use nonces/hashes. Accepted as a documented low residual risk. Removing it would require a significant refactor to eliminate all inline styles.</p></div>
       </article>
 
       <!-- F-02 -->
@@ -534,11 +331,11 @@
           <dt>OWASP</dt><dd>A02:2021 / A07:2021</dd>
           <dt>Component</dt><dd><code>src/authConfig.js</code> → <code>cacheLocation: "sessionStorage"</code></dd>
         </dl>
-        <div class="f-block"><span class="h">Description</span><p>MSAL caches tokens in <code>sessionStorage</code>, which is readable by any JavaScript on the app's origin. There is no more secure alternative for a pure SPA without a backend (an HttpOnly cookie would require a server the app deliberately does not have).</p></div>
-        <div class="f-block"><span class="h">Impact</span><p>A successful XSS attack could read a token and impersonate the user against Graph for the token's lifetime. <strong>This is contingent on an XSS vulnerability existing</strong>, which the assessment did not find.</p></div>
+        <div class="f-block"><span class="h">Description</span><p>MSAL caches tokens in <code>sessionStorage</code>, readable by any JavaScript on the app's origin. There is no more secure alternative for a pure SPA without a backend (an HttpOnly cookie would require a server the app deliberately does not have).</p></div>
+        <div class="f-block"><span class="h">Impact</span><p>A successful XSS attack could read a token and impersonate the user against Graph for the token's lifetime. <strong>Contingent on an XSS vulnerability existing</strong> — none was found (React auto-escaping, no dangerous sinks, and the automated scan reported no XSS).</p></div>
         <div class="f-block"><span class="h">Mitigating controls present</span>
           <ul>
-            <li><code>sessionStorage</code> (not <code>localStorage</code>) — cleared when the tab closes.</li>
+            <li><code>sessionStorage</code> (not <code>localStorage</code>) — cleared when the tab closes (verified in D-7).</li>
             <li>Strict CSP <code>script-src 'self'</code>.</li>
             <li>No <code>eval</code>, <code>dangerouslySetInnerHTML</code>, or <code>innerHTML</code> in the source.</li>
             <li>Delegated, read-only Graph scopes — a stolen token cannot write data.</li>
@@ -548,10 +345,24 @@
       </article>
 
       <!-- F-03 -->
-      <article class="finding f-info">
-        <div class="f-head"><span class="f-id">F-03</span><h3 class="f-title">Public configuration values embedded in the JS bundle</h3><span class="sev sev-info">Info</span><span class="f-tag">Static</span></div>
+      <article class="finding f-low">
+        <div class="f-head"><span class="f-id">F-03</span><h3 class="f-title">Weak TLS cipher suites offered by the hosting platform</h3><span class="sev sev-low">Low</span><span class="f-tag">Dynamic</span></div>
         <dl class="kv">
-          <dt>CVSS v3.1</dt><dd>0.0</dd>
+          <dt>CVSS v3.0</dt><dd>4.2 — <code>AV:A/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N</code></dd>
+          <dt>OWASP</dt><dd>A02:2021 – Cryptographic Failures</dd>
+          <dt>Component</dt><dd>Azure Static Web Apps TLS termination (<strong>platform-managed</strong>)</dd>
+          <dt>Source</dt><dd>Snyk API &amp; Web DAST (13 Jul 2026)</dd>
+        </dl>
+        <div class="f-block"><span class="h">Description</span><p>The HTTPS endpoint offers some legacy cipher suites that do not provide forward secrecy (<code>TLS_RSA_WITH_AES_128/256_CBC_SHA(256)</code>, <code>TLS_RSA_WITH_AES_128/256_GCM_SHA*</code>) and some CBC-mode ciphers (theoretically exposed to padding-oracle attacks). These are part of the <strong>Azure Static Web Apps TLS configuration, which Microsoft manages</strong> — the application cannot change the cipher list on <code>*.azurestaticapps.net</code>.</p></div>
+        <div class="f-block"><span class="h">Impact</span><p>Low. Exploitation requires an attacker on the network path (<code>AV:A</code>) able to intercept and downgrade a connection. Modern browsers negotiate the strong ECDHE/GCM and TLS 1.3 suites the same server supports; Qualys SSL Labs rated the endpoint <strong>Grade A</strong> overall (D-2). The weakness applies only to legacy clients that negotiate the older suites.</p></div>
+        <div class="f-block"><span class="h">Recommendation</span><p>Platform-managed — cannot be edited directly on Azure Static Web Apps. To enforce a forward-secrecy-only policy, front the app with <strong>Azure Front Door (Premium)</strong> using a custom TLS security policy (TLS 1.2+, ECDHE/GCM only). Given the overall Grade A rating and low exploitability, may reasonably be <strong>accepted as a low residual risk</strong>.</p></div>
+      </article>
+
+      <!-- F-04 -->
+      <article class="finding f-info">
+        <div class="f-head"><span class="f-id">F-04</span><h3 class="f-title">Public configuration values embedded in the JS bundle</h3><span class="sev sev-info">Info</span><span class="f-tag">Static</span></div>
+        <dl class="kv">
+          <dt>CVSS</dt><dd>0.0</dd>
           <dt>Component</dt><dd>Build output; <code>.env.example</code>, <code>src/authConfig.js</code></dd>
         </dl>
         <div class="f-block"><span class="h">Description</span><p><code>VITE_CLIENT_ID</code> and <code>VITE_TENANT_ID</code> are compiled into the JS bundle at build time.</p></div>
@@ -559,11 +370,11 @@
         <div class="f-block"><span class="h">Recommendation</span><p>No change required. <code>.env.example</code> documents this correctly and <code>.env</code> is git-ignored.</p></div>
       </article>
 
-      <!-- F-04 -->
+      <!-- F-05 -->
       <article class="finding f-info">
-        <div class="f-head"><span class="f-id">F-04</span><h3 class="f-title">Third-party resource load (Google Fonts)</h3><span class="sev sev-info">Info</span><span class="f-tag">Static / Dynamic</span></div>
+        <div class="f-head"><span class="f-id">F-05</span><h3 class="f-title">Third-party resource load (Google Fonts)</h3><span class="sev sev-info">Info</span><span class="f-tag">Static / Dynamic</span></div>
         <dl class="kv">
-          <dt>CVSS v3.1</dt><dd>0.0</dd>
+          <dt>CVSS</dt><dd>0.0</dd>
           <dt>Component</dt><dd><code>index.html</code> font links; CSP <code>font-src</code> / <code>style-src</code></dd>
         </dl>
         <div class="f-block"><span class="h">Description</span><p>The app loads web fonts from Google (<code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code>), both allow-listed in the CSP. End-user browsers therefore make requests to Google for typography.</p></div>
@@ -571,16 +382,16 @@
         <div class="f-block"><span class="h">Recommendation</span><p>Acceptable for most organisations. If the customer's privacy policy disallows third-party font hosting, self-host the fonts and remove the two Google hosts from the CSP.</p></div>
       </article>
 
-      <!-- F-05 -->
+      <!-- F-06 -->
       <article class="finding f-info">
-        <div class="f-head"><span class="f-id">F-05</span><h3 class="f-title">Security headers/CSP are hosting-platform-specific (Azure SWA)</h3><span class="sev sev-info">Info</span><span class="f-tag">Static · Portability</span></div>
+        <div class="f-head"><span class="f-id">F-06</span><h3 class="f-title">Security headers/CSP are hosting-platform-specific (Azure SWA)</h3><span class="sev sev-info">Info</span><span class="f-tag">Static · Portability</span></div>
         <dl class="kv">
-          <dt>CVSS v3.1</dt><dd>0.0 — deployment portability</dd>
+          <dt>CVSS</dt><dd>0.0 — deployment portability</dd>
           <dt>Component</dt><dd><code>public/staticwebapp.config.json</code></dd>
         </dl>
-        <div class="f-block"><span class="h">Description</span><p>The application's entire HTTP-header defence — CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP — is delivered through <code>staticwebapp.config.json</code>, which is <strong>only honoured by Azure Static Web Apps</strong>. On any other host this file is <strong>silently ignored</strong> and none of these protections apply unless re-implemented using that platform's own mechanism.</p></div>
-        <div class="f-block"><span class="h">Impact</span><p>No impact while hosted on Azure Static Web Apps (as tested). If migrated to another platform without re-implementing the headers, the app would lose its CSP, HSTS, clickjacking, and MIME-sniffing protections — a significant security regression.</p></div>
-        <div class="f-block"><span class="h">Recommendation</span><p>If hosting is moved, re-create the same headers using the target platform's mechanism, then re-verify (§8, D-1). Equivalents:</p></div>
+        <div class="f-block"><span class="h">Description</span><p>The app's entire HTTP-header defence — CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP — is delivered through <code>staticwebapp.config.json</code>, which is <strong>only honoured by Azure Static Web Apps</strong>. On any other host this file is <strong>silently ignored</strong> and none of these protections apply unless re-implemented using that platform's own mechanism.</p></div>
+        <div class="f-block"><span class="h">Impact</span><p>No impact while hosted on Azure Static Web Apps (as tested). If migrated elsewhere without re-implementing the headers, the app would lose its CSP, HSTS, clickjacking, and MIME-sniffing protections — a significant regression.</p></div>
+        <div class="f-block"><span class="h">Recommendation</span><p>If hosting is moved, re-create the headers using the target platform's mechanism, then re-verify (§8, D-1). Equivalents:</p></div>
         <div class="tbl-wrap">
           <table class="data">
             <thead><tr><th>Platform</th><th>Header mechanism</th></tr></thead>
@@ -604,53 +415,55 @@
     <section class="section">
       <div class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">Positive security observations</h2></div>
       <div>
-        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Strictly read-only.</span> <span class="pd">No edit or write capability in the UI and no write path to SharePoint — the dashboard only visualises data.</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Strictly read-only.</span> <span class="pd">No edit/write capability in the UI and no write path to SharePoint — the dashboard only visualises data.</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">No dangerous DOM sinks.</span> <span class="pd">No <code>eval</code>, <code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, or <code>document.write</code> anywhere in the source.</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Safe rendering.</span> <span class="pd">All external (workbook) data is rendered as auto-escaped text by React.</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Zero known dependency vulnerabilities.</span> <span class="pd"><code>npm audit</code> — 0 across 138 dependencies.</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Clean dynamic scan.</span> <span class="pd">No injection / XSS / open-redirect / sensitive-data findings (Snyk API &amp; Web DAST).</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Strict CSP for scripts.</span> <span class="pd"><code>script-src 'self'</code>, <code>object-src 'none'</code>, <code>frame-ancestors 'none'</code>, <code>base-uri 'self'</code>.</span></div></div>
-        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Full HTTP security-header set.</span> <span class="pd">HSTS, X-Frame-Options: DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP.</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Full HTTP security-header set — securityheaders.com A+.</span> <span class="pd">HSTS, X-Frame-Options: DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP.</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Valid TLS — Qualys SSL Labs Grade A.</span> <span class="pd">TLS 1.3 supported, valid certificate, CAA policy present.</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Modern authentication.</span> <span class="pd">OAuth 2.0 Authorization Code + PKCE, no client secret.</span></div></div>
         <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Least-privilege data access.</span> <span class="pd">Delegated, read-only Graph scopes: <code>User.Read</code>, <code>Files.Read.All</code>, <code>Sites.Read.All</code>.</span></div></div>
-        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Reduced token exposure.</span> <span class="pd">Tokens in <code>sessionStorage</code> (cleared on tab close), not <code>localStorage</code>.</span></div></div>
-        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">No reverse-tabnabbing.</span> <span class="pd">External link uses <code>rel="noreferrer"</code>.</span></div></div>
-        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">HTTPS enforced.</span> <span class="pd">HSTS + <code>upgrade-insecure-requests</code>.</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Session tokens cleared on sign-out.</span> <span class="pd">Held in <code>sessionStorage</code>; verified removed after logout (D-7).</span></div></div>
+        <div class="pos-item"><span class="pos-check">✓</span><div><span class="pt">Access control enforced by Entra.</span> <span class="pd">Unassigned users blocked before the app loads (D-6).</span></div></div>
       </div>
     </section>
 
-    <!-- ══ 8. DYNAMIC CHECKS ══ -->
+    <!-- ══ 8. DYNAMIC RESULTS ══ -->
     <section class="section">
-      <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Dynamic checks to complete with the VAPT platform</h2></div>
-      <p>Run the following against the <strong>live URL</strong> with your commercial VAPT platform and record the outcomes. These validate, at runtime, controls confirmed statically above.</p>
+      <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Dynamic assessment results</h2></div>
+      <p>Performed against the live URL. D-1/D-2/D-5/D-6/D-7 verified manually and via free scanners; D-3/D-4/D-8/D-9 by the Snyk API &amp; Web automated scan.</p>
       <div class="tbl-wrap">
         <table class="data">
-          <thead><tr><th>#</th><th>Dynamic check</th><th>Expected result</th><th>Tool result</th></tr></thead>
+          <thead><tr><th>#</th><th>Check</th><th>Result</th></tr></thead>
           <tbody>
-            <tr><td class="idc">D-1</td><td>Security-header scan (securityheaders.com)</td><td>A / A+; all headers present</td><td><strong style="color:var(--ok)">PASS — A+</strong>, all 6 headers present (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy). 11 Jul 2026.</td></tr>
-            <tr><td class="idc">D-2</td><td>TLS/SSL configuration scan (Qualys SSL Labs)</td><td>TLS 1.2+; no weak ciphers; valid cert</td><td><strong style="color:var(--ok)">PASS — Grade A</strong>, TLS 1.3, valid cert, CAA present. 11 Jul 2026.</td></tr>
-            <tr><td class="idc">D-3</td><td>Authenticated crawl + active XSS/injection scan</td><td>No script-executing findings</td><td class="fill">&lt;paste — Part B (Probely)&gt;</td></tr>
-            <tr><td class="idc">D-4</td><td>CSP effectiveness / bypass attempt</td><td>Inline/external script blocked</td><td class="fill">&lt;paste — Part B (Probely)&gt;</td></tr>
-            <tr><td class="idc">D-5</td><td>Clickjacking (framing) test</td><td>Page refuses to frame (DENY)</td><td><strong style="color:var(--ok)">PASS</strong> — site refused to load in an iframe; blocked per <code>X-Frame-Options: DENY</code>. 11 Jul 2026.</td></tr>
-            <tr><td class="idc">D-6</td><td>Auth: unassigned account</td><td>Blocked by Entra before app loads</td><td><strong style="color:var(--ok)">PASS</strong> — unassigned user rejected by Entra (AADSTS50105) before the app loaded. 11 Jul 2026.</td></tr>
-            <tr><td class="idc">D-7</td><td>Session: sign-out &amp; token expiry</td><td>Tokens cleared; no reuse after sign-out</td><td><strong style="color:var(--ok)">PASS</strong> — after sign-out, returned to sign-in screen and all MSAL tokens cleared from <code>sessionStorage</code>. 11 Jul 2026.</td></tr>
-            <tr><td class="idc">D-8</td><td>Sensitive-data-in-response scan</td><td>No secrets/tokens/PII in served assets</td><td class="fill">&lt;paste — Part B (Probely)&gt;</td></tr>
-            <tr><td class="idc">D-9</td><td>OAuth redirect-URI / state handling</td><td>No open-redirect; state/PKCE enforced</td><td class="fill">&lt;paste — Part B (Probely)&gt;</td></tr>
+            <tr><td class="idc">D-1</td><td>Security-header scan (securityheaders.com)</td><td><strong style="color:var(--ok)">PASS — A+</strong>, all 6 headers present. 11 Jul 2026.</td></tr>
+            <tr><td class="idc">D-2</td><td>TLS/SSL configuration (Qualys SSL Labs)</td><td><strong style="color:var(--ok)">PASS — Grade A</strong>, TLS 1.3, valid cert, CAA present. 11 Jul 2026. (Legacy cipher note → F-03.)</td></tr>
+            <tr><td class="idc">D-3</td><td>Crawl + active XSS/injection scan (Snyk)</td><td><strong style="color:var(--ok)">PASS</strong> — no XSS/injection findings. 13 Jul 2026.</td></tr>
+            <tr><td class="idc">D-4</td><td>CSP effectiveness / bypass (Snyk)</td><td><strong style="color:var(--ok)">PASS with note</strong> — CSP present; <code>script-src 'self'</code> effective. Only <code>style-src 'unsafe-inline'</code> flagged → F-01. 13 Jul 2026.</td></tr>
+            <tr><td class="idc">D-5</td><td>Clickjacking (framing) test</td><td><strong style="color:var(--ok)">PASS</strong> — site refused to load in an iframe; blocked per <code>X-Frame-Options: DENY</code>. 11 Jul 2026.</td></tr>
+            <tr><td class="idc">D-6</td><td>Authentication: unassigned account</td><td><strong style="color:var(--ok)">PASS</strong> — unassigned user rejected by Entra (AADSTS50105) before the app loaded. 11 Jul 2026.</td></tr>
+            <tr><td class="idc">D-7</td><td>Session: sign-out &amp; token expiry</td><td><strong style="color:var(--ok)">PASS</strong> — after sign-out, returned to sign-in screen; all MSAL tokens cleared from <code>sessionStorage</code>. 11 Jul 2026.</td></tr>
+            <tr><td class="idc">D-8</td><td>Sensitive-data-in-response scan (Snyk)</td><td><strong style="color:var(--ok)">PASS</strong> — no information-disclosure findings. 13 Jul 2026.</td></tr>
+            <tr><td class="idc">D-9</td><td>OAuth redirect / open-redirect (Snyk)</td><td><strong style="color:var(--ok)">PASS</strong> — no open-redirect findings. 13 Jul 2026.</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="callout">Attach the platform's raw report as <strong>Appendix&nbsp;B</strong>. If any dynamic check produces a finding, add it to §5/§6 with a CVSS rating and update the counts on the cover.</div>
+      <div class="callout">The Snyk automated scan (13 Jul 2026, unauthenticated, "Normal" profile, "Complete" scope) crawled the application and reported <strong>0 Critical / 0 High / 0 Medium and 2 Low</strong> findings — the CSP item (F-01) and the platform cipher item (F-03), both detailed above. The full Snyk export is attached as <strong>Appendix&nbsp;B</strong>.</div>
     </section>
 
     <!-- ══ 9. CONCLUSION ══ -->
     <section class="section">
       <div class="sec-head"><span class="sec-num">09</span><h2 class="sec-title">Conclusion</h2></div>
-      <p>Based on the static assessment completed and pending confirmation of the dynamic checks in §8, the GMR Sunrise Transformation Maturity Dashboard presents a <strong>LOW overall security risk</strong> and is considered <strong>suitable for deployment</strong>. No critical, high, or medium-severity vulnerabilities were identified. The residual low/informational items are documented, understood trade-offs appropriate to a strictly read-only, backend-less single-page application.</p>
-      <h3>Recommended actions before go-live</h3>
+      <p>The GMR Sunrise Transformation Maturity Dashboard presents a <strong>LOW overall security risk</strong> and is considered <strong>suitable for deployment</strong>. No critical, high, or medium-severity vulnerabilities were identified by source review, dependency audit, or the automated dynamic scan. The residual low/informational items are documented, understood trade-offs appropriate to a strictly read-only, backend-less single-page application.</p>
+      <h3>Recommended actions</h3>
       <ol class="actions">
-        <li>Complete the §8 dynamic checks with the VAPT platform and attach the output.</li>
+        <li><strong>F-01</strong> (CSP <code>style-src 'unsafe-inline'</code>) — accepted low; required by the stack. No action needed unless policy forbids it.</li>
+        <li><strong>F-03</strong> (platform cipher suites) — Azure-managed; accept, or front with Azure Front Door for a stricter TLS policy if required.</li>
         <li>Perform the post-deployment CSP verification (confirm the SharePoint download host is allow-listed — see the handover document).</li>
-        <li>Optionally address F-01 / F-04 if required by the customer's policies.</li>
-        <li>If hosting is ever moved off Azure Static Web Apps, action <strong>F-05</strong> (re-implement the security headers) and re-run §8 against the new URL.</li>
+        <li><strong>F-05</strong> (Google Fonts) — optional; self-host fonts if policy requires.</li>
+        <li><strong>F-06</strong> — if hosting ever moves off Azure Static Web Apps, re-implement the security headers and re-run §8 against the new URL.</li>
       </ol>
     </section>
 
@@ -658,11 +471,12 @@
     <section class="section">
       <div class="sec-head"><span class="sec-num">10</span><h2 class="sec-title">Appendices</h2></div>
       <dl class="kv" style="font-size:14px; gap:8px 18px;">
-        <dt>Appendix A</dt><dd>Tooling — manual source review; <code>npm audit</code> (SCA); <span class="fill">&lt;commercial VAPT platform name / version&gt;</span> (DAST).</dd>
-        <dt>Appendix B</dt><dd>Raw automated scan report (attach export).</dd>
-        <dt>Appendix C</dt><dd>References — OWASP Top 10 (2021), OWASP WSTG, OWASP ASVS, CVSS v3.1 specification.</dd>
+        <dt>Appendix A</dt><dd>Tooling — manual source review; <code>npm audit</code> (SCA); <strong>Snyk API &amp; Web</strong> (DAST).</dd>
+        <dt>Appendix B</dt><dd>Snyk API &amp; Web scan report (PDF export attached).</dd>
+        <dt>Appendix C</dt><dd>Evidence screenshots (D-1 to D-9).</dd>
+        <dt>Appendix D</dt><dd>References — OWASP Top 10 (2021), OWASP WSTG, OWASP ASVS, CVSS v3.x specification.</dd>
       </dl>
-      <p class="footer-note">This report reflects the security posture of version 1.0.0 at the assessment date. Any subsequent code, dependency, or configuration change should be re-assessed. Ratings for statically-confirmed findings are the assessor's; dynamic findings are subject to the VAPT platform's output.</p>
+      <p class="footer-note">This report reflects the security posture of version 1.0.0 at the assessment dates (11–13 July 2026). Any subsequent code, dependency, or configuration change should be re-assessed.</p>
     </section>
 
   </div>
