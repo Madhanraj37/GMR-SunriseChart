@@ -101,16 +101,13 @@ sees the data.
    "has the file changed?" check and only re-downloads when the workbook was
    actually modified — so edits in SharePoint appear within about half a minute.
 
-### User roles
+### User access
 
-| Role | Who | Can do |
-|------|-----|--------|
-| **Viewer** | Any assigned user | View all dashboards and drill-downs (read-only) |
-| **Editor** | Emails listed in `VITE_ADMIN_EMAILS` | Additionally toggle a task's done/not-done state **in the live view** |
-
-> **Important:** Editor toggles change only what is shown on screen for that
-> session. They are **not written back** to the Excel file. The workbook remains
-> the single source of truth; to make a change permanent, edit the Excel file.
+The application is **read-only for all users**. Every assigned user has the same
+experience: they can view all dashboards, drill-downs, and the Risk Register.
+There are **no editor or admin roles inside the app**, and there is no facility to
+change data from the app. The SharePoint Excel workbook is the single source of
+truth — to change what the dashboard shows, edit the Excel file.
 
 ---
 
@@ -180,7 +177,7 @@ that column is blank, it is derived from the **RPN** (Risk Priority Number):
 
 ## 5. Configuration
 
-All configuration is supplied through four environment variables (see
+All configuration is supplied through three environment variables (see
 [.env.example](.env.example)). They are **embedded into the build** by Vite when
 you run `npm run build` — they are **not** read at runtime, so any change requires
 a rebuild and redeploy.
@@ -190,7 +187,6 @@ a rebuild and redeploy.
 | `VITE_CLIENT_ID` | Identifies the app to Microsoft | Entra app registration → Overview |
 | `VITE_TENANT_ID` | Your Microsoft 365 directory | Entra app registration → Overview |
 | `VITE_EXCEL_FILE_URL` | Which SharePoint file to read | SharePoint → the file's *Share* link |
-| `VITE_ADMIN_EMAILS` | Comma-separated editor emails | Your choice |
 
 > `VITE_CLIENT_ID` and `VITE_TENANT_ID` are **public identifiers**, not secrets —
 > they are visible in the browser bundle of any single-page app by design. There
@@ -215,9 +211,8 @@ posture:
 - **Who can sign in** is controlled in Entra ID: set the Enterprise Application's
   *"Assignment required"* to **Yes** and assign the permitted users/groups.
   Unassigned users are rejected by Microsoft before the app loads.
-- **Who can edit** the live view is the `VITE_ADMIN_EMAILS` allow-list. Because
-  edits are never written back (§3), this is a UI convenience, not a data-security
-  boundary — the underlying data cannot be altered from the app regardless.
+- **There is no in-app editing** — the app is read-only for every user, so there
+  is no write path or privileged role to protect.
 
 ### 6.3 Data access (least privilege)
 - The app requests **delegated, read-only** Microsoft Graph permissions:
@@ -291,7 +286,6 @@ the Entra app.
 |------|-----|
 | **Update the dashboard data** | Edit the SharePoint Excel workbook. The dashboard reflects changes within ~30 seconds automatically — no redeploy needed. |
 | **Grant / revoke access for a person** | Entra ID → Enterprise applications → this app → **Users and groups**. |
-| **Change who can edit (Editors)** | Update `VITE_ADMIN_EMAILS`, then **rebuild and redeploy** (values are baked in at build time). |
 | **Point at a different Excel file** | Update `VITE_EXCEL_FILE_URL`, rebuild, redeploy. |
 | **Deploy a new version / config change** | `npm run build` then redeploy `dist/` (DEPLOY_TO_AZURE.md). |
 | **Add a custom domain** | Configure it in Azure SWA, then add the new HTTPS URL as a redirect URI in the Entra app. |
@@ -301,8 +295,8 @@ the Entra app.
 
 ## 9. Known limitations & assumptions
 
-- **Read-only by design.** Task toggles are not written back to Excel; the
-  workbook is the source of truth.
+- **Read-only by design.** The app has no editing capability; the SharePoint
+  workbook is the single source of truth.
 - **Config is build-time.** Changing any `VITE_*` value requires a rebuild and
   redeploy; the running site does not read live settings.
 - **Excel structure.** The workbook must use the recognised columns (Phase,
@@ -310,8 +304,6 @@ the Entra app.
   auto-detected within the same workbook.
 - **Single source file.** One workbook is configured at a time.
 - **Modern browser** required (current Edge, Chrome, Firefox, or Safari).
-- **Editor allow-list is client-side** — appropriate here only because no write
-  operations exist.
 
 ---
 
@@ -376,4 +368,4 @@ customer's own version control (Azure DevOps / GitHub) as the master copy.
 - [ ] Production URL registered as a redirect URI in the Entra app
 - [ ] Signed in as a test user and confirmed the dashboard loads live SharePoint data
 - [ ] Security headers verified (e.g. <https://securityheaders.com>)
-- [ ] Editor vs viewer behaviour confirmed for the intended accounts
+- [ ] Read-only dashboard behaviour confirmed for the intended accounts

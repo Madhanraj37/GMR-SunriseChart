@@ -40,16 +40,14 @@ time** by Vite — rebuild after changing them.
 | `VITE_CLIENT_ID` | Entra ID app registration — Application (client) ID |
 | `VITE_TENANT_ID` | Entra ID directory (tenant) ID |
 | `VITE_EXCEL_FILE_URL` | SharePoint share link to the Excel workbook |
-| `VITE_ADMIN_EMAILS` | Comma-separated emails allowed to toggle task status (others are read-only) |
 
 ## How access control works
 
 - **Who can sign in:** controlled in Entra ID (Enterprise application →
   *Assignment required = Yes* → assign users/groups). Unassigned users are
   blocked by Microsoft at the login screen.
-- **Who can edit:** only emails listed in `VITE_ADMIN_EMAILS` can toggle task
-  status in the live view. Everyone else is view-only. Toggles are **not**
-  written back to Excel — the workbook remains the source of truth.
+- **What users can do:** the app is **read-only for everyone** — there is no
+  in-app editing. The SharePoint workbook is the single source of truth.
 - **Data access:** delegated Graph scopes (`User.Read`, `Files.Read.All`,
   `Sites.Read.All`) — the app can only read what the signed-in user can already
   read in SharePoint.

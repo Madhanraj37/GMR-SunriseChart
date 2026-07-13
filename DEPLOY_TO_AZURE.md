@@ -102,7 +102,6 @@ Use this if the customer prefers automated deployments from a Git repository.
            VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
            VITE_TENANT_ID: ${{ secrets.VITE_TENANT_ID }}
            VITE_EXCEL_FILE_URL: ${{ secrets.VITE_EXCEL_FILE_URL }}
-           VITE_ADMIN_EMAILS: ${{ secrets.VITE_ADMIN_EMAILS }}
    ```
 5. Every push to the chosen branch now builds and deploys automatically.
 

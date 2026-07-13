@@ -17,12 +17,11 @@ and how to run the project locally.
   **Microsoft Graph API** and displays it as a dashboard.
 - Every **30 seconds** it checks whether the Excel file changed; it only
   re-downloads when there is an actual update (efficient, near real-time).
-- Only **assigned accounts** can sign in; only **listed admin emails** can toggle
-  task status — everyone else is **view-only**.
+- Only **assigned accounts** can sign in. The dashboard is **read-only for every
+  user** — there is no in-app editing.
 
-> **Note on editing:** Task-status toggles are reflected in the live view but are
-> **not written back** to the Excel file. The Excel file is the source of truth;
-> the dashboard reads from it.
+> **Note:** The dashboard only displays data; it never writes back to the Excel
+> file. The Excel file is the source of truth; the dashboard reads from it.
 
 ---
 
@@ -102,7 +101,6 @@ and how to run the project locally.
 | `VITE_CLIENT_ID` | App registration → **Overview** → "Application (client) ID" |
 | `VITE_TENANT_ID` | App registration → **Overview** → "Directory (tenant) ID" |
 | `VITE_EXCEL_FILE_URL` | SharePoint → the Excel file's share link (step 4) |
-| `VITE_ADMIN_EMAILS` | Comma-separated emails of people allowed to **edit** task status (all other assigned users are view-only) |
 
 ---
 
@@ -118,7 +116,6 @@ and how to run the project locally.
    VITE_CLIENT_ID=11111111-2222-3333-4444-555555555555
    VITE_TENANT_ID=66666666-7777-8888-9999-000000000000
    VITE_EXCEL_FILE_URL=https://yourtenant.sharepoint.com/:x:/s/YourSite/IQB....?e=abcdef
-   VITE_ADMIN_EMAILS=admin1@yourcompany.com,admin2@yourcompany.com
    ```
 
 > `.env` is git-ignored and is **not** committed. Each environment supplies its own.
@@ -137,9 +134,7 @@ npm run dev
 
 - The app opens at **http://localhost:5173**.
 - Click **"Sign in with Microsoft"** and sign in with an **assigned** account.
-- The dashboard loads from your SharePoint Excel.
-  - If your email is in `VITE_ADMIN_EMAILS`, you see an **"Editor"** badge and can toggle tasks.
-  - Otherwise you see a **"View only"** badge with disabled checkboxes.
+- The dashboard loads from your SharePoint Excel (read-only for all users).
 
 ---
 
